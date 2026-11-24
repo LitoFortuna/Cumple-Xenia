@@ -1,0 +1,162 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Bricolage Grotesque", system-ui, -apple-system, sans-serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --section-gap: 4rem;
+    --container-pad: 1rem;
+  }
+
+  html {
+    background-color: #06070b;
+    color: #f3f4f6;
+    font-family: var(--font-sans);
+    scroll-behavior: smooth;
+    overflow-x: clip;
+  }
+
+  body {
+    background-color: #06070b;
+    color: #f3f4f6;
+    overflow-x: clip;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
+
+  select option {
+    background-color: #0f1119;
+    color: #f3f4f6;
+  }
+}
+
+/* Explicit responsive media queries for fluid spacing, cards, and horizon proportions */
+@media (min-width: 640px) {
+  :root {
+    --section-gap: 5.5rem;
+    --container-pad: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --section-gap: 7rem;
+    --container-pad: 2rem;
+  }
+}
+
+@media (hover: hover) {
+  .interactive-surface {
+    transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 200ms ease,
+      background-color 200ms ease;
+  }
+  .interactive-surface:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* Luminous planetary horizon backdrop (compositor-friendly, zero layout thrash) */
+.orbital-horizon {
+  background: radial-gradient(
+    68% 96% at 50% 108%,
+    #06070b 0%,
+    #090d1e 44%,
+    rgba(91, 33, 182, 0.52) 64%,
+    rgba(37, 99, 235, 0.85) 75%,
+    rgba(147, 197, 253, 0.92) 78.5%,
+    rgba(59, 130, 246, 0.24) 84%,
+    rgba(139, 92, 246, 0.1) 91%,
+    transparent 100%
+  );
+}
+
+.text-gradient-orbital {
+  background: linear-gradient(125deg, #ffffff 8%, #93c5fd 52%, #c4b5fd 96%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-cobalt {
+  background: linear-gradient(125deg, #60a5fa 0%, #3b82f6 52%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@keyframes orbita-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: orbita-fade-up 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Custom 3027 cosmic slider for ambient sound control */
+.ambient-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, rgba(124, 58, 237, 0.45), rgba(59, 130, 246, 0.65));
+  outline: none;
+}
+
+.ambient-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: #f9fafb;
+  border: 2px solid #3b82f6;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.55);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.ambient-range::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 16px rgba(96, 165, 250, 0.75);
+}
+
+.ambient-range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: #f9fafb;
+  border: 2px solid #3b82f6;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.55);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.ambient-range:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-fade-up {
+    animation: none;
+  }
+  .interactive-surface:hover {
+    transform: none;
+  }
+}

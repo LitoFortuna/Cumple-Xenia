@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="es" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Órbita-X — Gala Estelar del Ritmo 3027</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --apple-black: #000000;
+      --apple-surface: #121215;
+      --apple-surface-hover: #18181d;
+      --apple-text: #f5f5f7;
+      --apple-muted: #86868b;
+      --electric-blue: #0071e3;
+      --electric-blue-bright: #2997ff;
+      --royal-purple: #662483;
+      --vibrant-purple: #a855f7;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif;
+      background-color: var(--apple-black);
+      color: var(--apple-text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    /* Barra superior translúcida estilo Apple */
+    .apple-nav {
+      background: rgba(12, 12, 15, 0.72);
+      backdrop-filter: saturate(180%) blur(22px);
+      -webkit-backdrop-filter: saturate(180%) blur(22px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Tarjetas Bento */
+    .bento-card {
+      background: linear-gradient(180deg, rgba(24, 24, 29, 0.88) 0%, rgba(16, 16, 20, 0.94) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 28px;
+      transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease, box-shadow 0.45s ease;
+    }
+    .bento-card:hover {
+      border-color: rgba(255, 255, 255, 0.16);
+      transform: translateY(-2px);
+    }
+
+    /* Degradados tipográficos Apple Keynote */
+    .text-gradient-orbital {
+      background: linear-gradient(135deg, #ffffff 10%, #7dd3fc 52%, #c084fc 95%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .text-gradient-blue {
+      background: linear-gradient(135deg, #60a5fa 0%, #2997ff 55%, #a855f7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Eclipse / Horizonte planetario minimalista estilo iPhone Pro */
+    .apple-eclipse {
+      position: relative;
+      background: radial-gradient(
+        68% 95% at 50% 108%,
+        #000000 0%,
+        #050712 46%,
+        rgba(102, 36, 131, 0.72) 66%,
+        rgba(0, 113, 227, 0.92) 76%,
+        rgba(147, 197, 253, 0.95) 79%,
+        rgba(41, 151, 255, 0.28) 84%,
+        rgba(168, 85, 247, 0.14) 91%,
+        transparent 100%
+      );
+    }
+
+    /* Segmented Control estilo iOS */
+    .ios-segment {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 9999px;
+      padding: 4px;
+    }
+
+    /* Inputs limpios estilo macOS / iOS */
+    .apple-input {
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #f5f5f7;
+      border-radius: 16px;
+      transition: all 0.2s ease;
+    }
+    .apple-input:hover {
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+    .apple-input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.065);
+      border-color: var(--electric-blue-bright);
+      box-shadow: 0 0 0 4px rgba(41, 151, 255, 0.18);
+    }
+    select option {
+      background-color: #121215;
+      color: #f5f5f7;
+    }
+
+    /* Botón primario Apple */
+    .btn-apple-primary {
+      background: var(--electric-blue);
+      color: #ffffff;
+      border-radius: 9999px;
+      transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.25s ease;
+    }
+    .btn-apple-primary:hover {
+      background: #0077ed;
+      box-shadow: 0 10px 30px rgba(0, 113, 227, 0.35);
+    }
+    .btn-apple-primary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-apple-purple {
+      background: linear-gradient(135deg, #662483 0%, #7c3aed 55%, #0071e3 100%);
+      color: #ffffff;
+      border-radius: 9999px;
+      transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.25s ease;
+    }
+    .btn-apple-purple:hover {
+      opacity: 0.94;
+      box-shadow: 0 10px 32px rgba(124, 58, 237, 0.38);
+    }
+    .btn-apple-purple:active {
+      transform: scale(0.98);
+    }
+
+    /* Animaciones suaves de entrada al hacer scroll */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @keyframes slow-pulse {
+      0%, 100% { opacity: 0.55; transform: scale(1); }
+      50% { opacity: 0.9; transform: scale(1.06); }
+    }
+    .ambient-orb {
+      animation: slow-pulse 8s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="selection:bg-[#0071e3] selection:text-white">
+
+  <!-- Barra de Navegación Minimalista estilo Apple -->
+  <header class="apple-nav sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between gap-4">
+      <!-- Marca -->
+      <button type="button" onclick="switchView('main', 'top')" class="flex items-center gap-2.5 group cursor-pointer">
+        <span class="w-6 h-6 rounded-full bg-gradient-to-tr from-[#662483] via-[#a855f7] to-[#2997ff] flex items-center justify-center shadow-[0_0_16px_rgba(41,151,255,0.45)]">
+          <span class="w-2 h-2 rounded-full bg-black"></span>
+        </span>
+        <span class="text-sm font-semibold tracking-tight text-[#f5f5f7]">Órbita-X</span>
+      </button>
+
+      <!-- Enlaces Desktop -->
+      <nav class="hidden md:flex items-center gap-7 text-xs font-normal text-[#a1a1a6]" aria-label="Principal">
+        <button type="button" onclick="switchView('main', 'cronica')" class="hover:text-white transition cursor-pointer">Historia</button>
+        <button type="button" onclick="switchView('main', 'detalles')" class="hover:text-white transition cursor-pointer">Detalles</button>
+        <button type="button" onclick="switchView('main', 'dresscode')" class="hover:text-white transition cursor-pointer">Dress Code</button>
+        <button type="button" onclick="switchView('rumors')" id="nav-link-rumors" class="hover:text-white transition cursor-pointer">Buzón Lady Nebula</button>
+      </nav>
+
+      <!-- CTA Derecha -->
+      <div class="flex items-center gap-3">
+        <button type="button" onclick="switchView('main', 'personaje')"
+          class="btn-apple-primary px-4 py-1.5 text-xs font-medium cursor-pointer">
+          Crear ficha
+        </button>
+      </div>
+    </div>
+
+    <!-- Sub-barra iOS Segmented Control para alternar vistas cómodamente -->
+    <div class="border-t border-white/[0.06] bg-black/40">
+      <div class="max-w-5xl mx-auto px-5 py-2 flex items-center justify-between gap-4">
+        <p class="hidden sm:flex items-center gap-2 text-[11px] text-[#86868b]">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#2997ff] shadow-[0_0_8px_#2997ff]"></span>
+          Alto secreto frente a la Comisaria Xenia
+        </p>
+
+        <div class="ios-segment grid grid-cols-2 w-full sm:w-auto sm:min-w-[300px]">
+          <button id="seg-main" type="button" onclick="switchView('main', 'top')"
+            class="py-1.5 px-4 rounded-full text-xs font-medium transition cursor-pointer bg-white text-black shadow-sm">
+            Invitación
+          </button>
+          <button id="seg-rumors" type="button" onclick="switchView('rumors')"
+            class="py-1.5 px-4 rounded-full text-xs font-medium transition cursor-pointer text-[#a1a1a6] hover:text-white">
+            Buzón Lady Nebula
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- =================================================================
+       VISTA 1: INVITACIÓN, MISIÓN, BENTO GRID Y FORMULARIO DE PERSONAJE
+       ================================================================= -->
+  <div id="view-main">
+
+    <!-- HERO KEYNOTE -->
+    <section id="top" class="relative pt-20 sm:pt-28 pb-0 overflow-hidden">
+      <!-- Iluminación ambiental volumétrica -->
+      <div class="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[780px] h-[420px] rounded-full bg-gradient-to-r from-[#662483]/30 via-[#0071e3]/25 to-[#a855f7]/25 blur-[130px] ambient-orb"></div>
+
+      <div class="relative z-10 max-w-4xl mx-auto px-5 text-center space-y-6">
+        <p class="text-xs sm:text-sm font-medium tracking-wide text-[#2997ff]">
+          Año 3027 · Crucero Aristocrático Nebulosa Real
+        </p>
+
+        <h1 class="text-5xl sm:text-7xl md:text-[82px] font-semibold tracking-[-0.04em] leading-[1.02] text-[#f5f5f7]">
+          El Escándalo de<br />
+          <span class="text-gradient-orbital">Órbita-X.</span>
+        </h1>
+
+        <p class="text-lg sm:text-2xl font-normal text-[#86868b] max-w-2xl mx-auto leading-snug tracking-[-0.015em]">
+          Gala Estelar del Ritmo y cumpleaños de Xenia. <span class="text-[#f5f5f7]">Domingo 3 de enero a las 17:00h.</span>
+        </p>
+
+        <div class="flex flex-wrap items-center justify-center gap-4 pt-3">
+          <button type="button" onclick="switchView('main', 'personaje')"
+            class="btn-apple-primary px-7 py-3.5 text-sm sm:text-base font-medium cursor-pointer">
+            Crear mi personaje
+          </button>
+          <button type="button" onclick="switchView('rumors')"
+            class="inline-flex items-center gap-1.5 px-5 py-3.5 text-sm sm:text-base font-medium text-[#2997ff] hover:text-[#60a5fa] transition cursor-pointer">
+            <span>Entrar al Buzón Lady Nebula</span>
+            <span class="text-lg leading-none">›</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Horizonte Planetario Minimalista (Visual Hero) -->
+      <div class="relative mt-14 sm:mt-20 h-60 sm:h-80 md:h-96 w-full overflow-hidden">
+        <div class="apple-eclipse absolute inset-x-[-18%] -bottom-[55%] h-[165%] rounded-[50%]"></div>
+
+        <!-- Líneas orbitales ultrafinas -->
+        <svg class="pointer-events-none absolute inset-0 w-full h-full opacity-75" viewBox="0 0 1440 420" fill="none" preserveAspectRatio="xMidYMax slice">
+          <path d="M-40 390 Q 720 40 1480 390" stroke="url(#appleArc)" stroke-width="1.2" />
+          <path d="M120 420 Q 720 120 1320 420" stroke="url(#appleArc2)" stroke-width="1" stroke-dasharray="3 6" />
+          <circle cx="720" cy="214" r="4" fill="#ffffff" />
+          <circle cx="720" cy="214" r="14" stroke="#2997ff" stroke-opacity="0.5" />
+          <circle cx="480" cy="242" r="2" fill="#a855f7" />
+          <circle cx="965" cy="244" r="2.2" fill="#38bdf8" />
+          <defs>
+            <linearGradient id="appleArc" x1="0" y1="0" x2="1440" y2="0" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#662483" stop-opacity="0" />
+              <stop offset="30%" stop-color="#a855f7" stop-opacity="0.6" />
+              <stop offset="50%" stop-color="#ffffff" stop-opacity="0.95" />
+              <stop offset="70%" stop-color="#2997ff" stop-opacity="0.6" />
+              <stop offset="100%" stop-color="#0071e3" stop-opacity="0" />
+            </linearGradient>
+            <linearGradient id="appleArc2" x1="120" y1="0" x2="1320" y2="0" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#2997ff" stop-opacity="0" />
+              <stop offset="50%" stop-color="#a855f7" stop-opacity="0.6" />
+              <stop offset="100%" stop-color="#2997ff" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        <!-- Fundido perfecto a negro puro -->
+        <div class="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black via-black/75 to-transparent"></div>
+      </div>
+    </section>
+
+    <!-- CRÓNICA KEYNOTE (Estilo Statement Apple: gris atenuado + frases clave en blanco) -->
+    <section id="cronica" class="max-w-4xl mx-auto px-5 py-20 sm:py-32 reveal">
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[#a855f7] mb-6">
+        Crónica Holográfica · Fase 0
+      </p>
+      <p class="text-2xl sm:text-4xl md:text-[42px] font-semibold tracking-[-0.03em] leading-[1.22] text-[#6e6e73]">
+        En el año 3027, el universo se rige por la <span class="text-[#f5f5f7]">Frecuencia del Ritmo</span>. Las grandes casas nobles compiten al son del urban cósmico, el R&amp;B estelar y el indie rock orbital. El <span class="text-[#f5f5f7]">domingo 3 de enero a las 17:00h</span> celebraremos la sucesión del futuro heredero/a de la <span class="text-gradient-blue">Comisaria Suprema Xenia</span>. Pero los sensores han saltado: alguien planea sabotear la gala y robar el <span class="text-[#f5f5f7]">Núcleo Armónico</span>.
+      </p>
+      <p class="mt-8 text-base sm:text-xl text-[#86868b] leading-relaxed max-w-2xl">
+        Has sido convocado como invitado VIP… y sospechoso principal. Te espera un Cluedo en Vivo inmersivo con pruebas escondidas por toda la nave, secretos cruzados, alianzas traicioneras y el interrogatorio implacable de Xenia.
+      </p>
+    </section>
+
+    <!-- BENTO GRID: DATOS CLAVE DE LA MISIÓN -->
+    <section id="detalles" class="max-w-5xl mx-auto px-5 py-10 sm:py-16 space-y-6 reveal">
+      <div class="space-y-2 mb-8">
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[#2997ff]">Briefing de Embarque</p>
+        <h2 class="text-3xl sm:text-5xl font-semibold tracking-[-0.03em] text-[#f5f5f7]">
+          Todo lo que necesitas saber.
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+        <!-- Bento 1: Fecha y Hora (Grande) -->
+        <div class="bento-card md:col-span-7 p-8 sm:p-10 relative overflow-hidden flex flex-col justify-between min-h-[260px]">
+          <div class="pointer-events-none absolute -top-16 -right-16 w-64 h-64 rounded-full bg-[#0071e3]/25 blur-[75px]"></div>
+          <p class="text-xs font-medium uppercase tracking-[0.18em] text-[#2997ff]">Fecha y Hora Confirmadas</p>
+          <div class="space-y-2 mt-8">
+            <p class="text-4xl sm:text-6xl font-semibold tracking-[-0.035em] text-[#f5f5f7]">
+              3 de enero
+            </p>
+            <p class="text-xl sm:text-2xl font-medium text-[#86868b]">
+              Domingo 2027 · <span class="text-[#f5f5f7]">17:00h</span>
+            </p>
+          </div>
+          <p class="text-xs text-[#86868b] mt-6">Duración estimada del Cluedo en Vivo: 90 – 120 minutos.</p>
+        </div>
+
+        <!-- Bento 2: Silencio Total -->
+        <div class="bento-card md:col-span-5 p-8 sm:p-10 relative overflow-hidden flex flex-col justify-between min-h-[260px]">
+          <div class="pointer-events-none absolute -bottom-16 -right-12 w-56 h-56 rounded-full bg-[#662483]/35 blur-[70px]"></div>
+          <p class="text-xs font-medium uppercase tracking-[0.18em] text-[#c084fc]">Protocolo</p>
+          <div class="space-y-2 mt-8">
+            <p class="text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-[#f5f5f7]">
+              Silencio total.
+            </p>
+            <p class="text-sm sm:text-base text-[#86868b] leading-relaxed">
+              Xenia no conoce el guion, las pruebas ni los roles asignados. Mantén tu ficha bajo llave.
+            </p>
+          </div>
+        </div>
+
+        <!-- Bento 3: Coordenadas -->
+        <div class="bento-card md:col-span-5 p-8 sm:p-10 flex flex-col justify-between min-h-[230px]">
+          <p class="text-xs font-medium uppercase tracking-[0.18em] text-[#86868b]">Coordenadas</p>
+          <div class="space-y-1.5 mt-6">
+            <p class="text-2xl sm:text-3xl font-semibold tracking-[-0.025em] text-[#f5f5f7]">
+              Crucero Nebulosa Real
+            </p>
+            <p class="text-sm sm:text-base text-[#86868b]">
+              Nuestra casa · Molins de Rei
+            </p>
+          </div>
+          <p class="text-[11px] font-mono text-[#6e6e73] mt-6">41.4139° N · 2.0163° E</p>
+        </div>
+
+        <!-- Bento 4: Buzón Lady Nebula Teaser -->
+        <div class="bento-card md:col-span-7 p-8 sm:p-10 relative overflow-hidden flex flex-col justify-between min-h-[230px]">
+          <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#662483]/20 via-transparent to-[#0071e3]/20"></div>
+          <div class="relative z-10 flex items-center justify-between">
+            <p class="text-xs font-medium uppercase tracking-[0.18em] text-[#c084fc]">Pre-Juego Activo</p>
+            <span class="w-2 h-2 rounded-full bg-[#2997ff] shadow-[0_0_10px_#2997ff]"></span>
+          </div>
+          <div class="relative z-10 mt-6 space-y-3">
+            <h3 class="text-2xl sm:text-3xl font-semibold tracking-[-0.025em] text-[#f5f5f7]">
+              El juego empieza antes de embarcar.
+            </h3>
+            <p class="text-sm text-[#a1a1a6] max-w-lg leading-relaxed">
+              Filtra manías, sobornos o rumores anónimos sobre el resto de invitados en el Buzón de Lady Nebula para incendiar la gala.
+            </p>
+            <button type="button" onclick="switchView('rumors')"
+              class="inline-flex items-center gap-1 text-sm font-medium text-[#2997ff] hover:text-[#60a5fa] transition pt-1 cursor-pointer">
+              <span>Ir al Buzón confidencial</span>
+              <span>›</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DRESS CODE BENTO -->
+    <section id="dresscode" class="max-w-5xl mx-auto px-5 py-16 sm:py-24 reveal">
+      <div class="max-w-2xl space-y-3 mb-10">
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[#a855f7]">Imprescindible para embarcar</p>
+        <h2 class="text-3xl sm:text-5xl font-semibold tracking-[-0.03em] text-[#f5f5f7]">
+          Gala Galáctica Urbana.
+        </h2>
+        <p class="text-base sm:text-lg text-[#86868b] leading-relaxed">
+          Imagina a la aristocracia de <span class="text-[#f5f5f7]">Los Bridgerton</span> entrando en un club futurista de <span class="text-[#f5f5f7]">Blade Runner</span>.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="bento-card p-8 sm:p-10 relative overflow-hidden">
+          <div class="pointer-events-none absolute -top-12 -right-12 w-48 h-48 rounded-full bg-[#a855f7]/20 blur-[60px]"></div>
+          <div class="w-11 h-11 rounded-2xl bg-[#a855f7]/15 border border-[#a855f7]/30 flex items-center justify-center text-[#c084fc] mb-6">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+            </svg>
+          </div>
+          <h3 class="text-2xl font-semibold tracking-tight text-[#f5f5f7] mb-2">Base Elegante</h3>
+          <p class="text-sm sm:text-base text-[#86868b] leading-relaxed">
+            Traje, vestido, camisa, pajarita, terciopelo o joyas llamativas. Presencia de alta sociedad galáctica.
+          </p>
+        </div>
+
+        <div class="bento-card p-8 sm:p-10 relative overflow-hidden">
+          <div class="pointer-events-none absolute -top-12 -right-12 w-48 h-48 rounded-full bg-[#2997ff]/20 blur-[60px]"></div>
+          <div class="w-11 h-11 rounded-2xl bg-[#2997ff]/15 border border-[#2997ff]/30 flex items-center justify-center text-[#60a5fa] mb-6">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+            </svg>
+          </div>
+          <h3 class="text-2xl font-semibold tracking-tight text-[#f5f5f7] mb-2">Toque Urbano &amp; Espacial</h3>
+          <p class="text-sm sm:text-base text-[#86868b] leading-relaxed">
+            Bambas o zapatillas, gafas de sol futuristas, detalles metalizados, acentos en morado o azul eléctrico y guiños cósmicos.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FORMULARIO: CREA TU PERSONAJE -->
+    <section id="personaje" class="max-w-3xl mx-auto px-5 py-16 sm:py-24 reveal">
+      <div class="bento-card p-7 sm:p-12 relative overflow-hidden">
+        <div class="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[520px] h-[220px] rounded-full bg-gradient-to-r from-[#662483]/30 via-[#0071e3]/25 to-[#a855f7]/25 blur-[90px]"></div>
+
+        <div class="relative z-10">
+          <div class="text-center max-w-lg mx-auto mb-10 space-y-2.5">
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[#2997ff]">Paso 1 · Registro de Pasajero</p>
+            <h2 class="text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-[#f5f5f7]">
+              Crea tu personaje.
+            </h2>
+            <p class="text-sm sm:text-base text-[#86868b] leading-relaxed">
+              Cada rol se escribe 100% a medida. Te enviaremos tu ficha secreta por correo unos días antes de la gala.
+            </p>
+          </div>
+
+          <form id="rsvp-form" class="space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label for="rsvp-nombre" class="block text-xs font-medium text-[#a1a1a6] mb-2">
+                  ¿Quién eres? *
+                </label>
+                <select id="rsvp-nombre" name="Nombre" required class="apple-input w-full px-4 py-3.5 text-sm">
+                  <option value="" disabled selected>Selecciona tu nombre…</option>
+                  <option value="Sergio Romera">Sergio Romera</option>
+                  <option value="Miriam Gómez">Miriam Gómez</option>
+                  <option value="Marc Vallès (Viri)">Marc Vallès (Viri)</option>
+                  <option value="Sara García">Sara García</option>
+                  <option value="Mike">Mike</option>
+                  <option value="Bob">Bob</option>
+                  <option value="JM (Javi Morillas)">JM (Javi Morillas)</option>
+                  <option value="Irene">Irene</option>
+                  <option value="Adri">Adri</option>
+                  <option value="Sara (pareja de Adri)">Sara (pareja de Adri)</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="rsvp-email" class="block text-xs font-medium text-[#a1a1a6] mb-2">
+                  Tu Correo Electrónico *
+                </label>
+                <input type="email" id="rsvp-email" name="Email" required placeholder="para enviarte tu ficha secreta"
+                  class="apple-input w-full px-4 py-3.5 text-sm placeholder-[#6e6e73]" />
+              </div>
+            </div>
+
+            <div>
+              <label for="rsvp-perfil" class="block text-xs font-medium text-[#a1a1a6] mb-2">
+                1. ¿Qué vibra te apetece interpretar en el crucero? *
+              </label>
+              <select id="rsvp-perfil" name="Perfil_de_Juego" required class="apple-input w-full px-4 py-3.5 text-sm">
+                <option value="" disabled selected>Elige tu estilo para la noche…</option>
+                <option value="Estratega / Manipulador">🧠 Estratega: Me encanta mentir, hacer pactos secretos y liar al personal</option>
+                <option value="Estrella Dramática">🎭 Estrella Dramática: Quiero foco, escándalos y teatralidad sin freno</option>
+                <option value="Espía / Cotilla">🕵️ Espía de la Corte: Prefiero observar, recopilar secretos y negociar info</option>
+                <option value="Caótico / Improvisador">⚡ Caótico/a: Me adapto a lo que me toque y vengo a improvisar y reírme</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="rsvp-mania" class="block text-xs font-medium text-[#a1a1a6] mb-2">
+                2. Confiesa una manía, vicio o "delito cotidiano" tuyo *
+              </label>
+              <input type="text" id="rsvp-mania" name="Mania_Propia" required
+                placeholder="Ej. Llego tarde a todo, no sé perder, miro obras en la calle…"
+                class="apple-input w-full px-4 py-3.5 text-sm placeholder-[#6e6e73]" />
+            </div>
+
+            <div>
+              <label for="rsvp-lema" class="block text-xs font-medium text-[#a1a1a6] mb-2">
+                3. Una canción o frase que sería el himno de tu personaje *
+              </label>
+              <input type="text" id="rsvp-lema" name="Himno_o_Frase" required
+                placeholder="Ej. 'Yo no fui, estaba bailando' o el título de un temazo"
+                class="apple-input w-full px-4 py-3.5 text-sm placeholder-[#6e6e73]" />
+            </div>
+
+            <div class="pt-3">
+              <button type="submit" id="rsvp-submit-btn"
+                class="btn-apple-primary w-full py-4 px-6 text-sm sm:text-base font-medium cursor-pointer">
+                Enviar datos y solicitar ficha
+              </button>
+            </div>
+
+            <p id="rsvp-error-msg" class="hidden text-center text-xs text-rose-300 bg-rose-950/50 border border-rose-500/30 rounded-2xl p-3.5"></p>
+          </form>
+
+          <!-- Éxito Personaje -->
+          <div id="rsvp-success-box" class="hidden text-center space-y-6 py-4">
+            <div class="w-16 h-16 mx-auto rounded-full bg-gradient-to-tr from-[#662483] to-[#0071e3] flex items-center justify-center shadow-[0_0_32px_rgba(41,151,255,0.4)]">
+              <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+            </div>
+
+            <div class="space-y-2">
+              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[#2997ff]">Embarque Registrado</p>
+              <h3 class="text-2xl sm:text-3xl font-semibold tracking-tight text-[#f5f5f7]">
+                Recibido, <span id="guest-name-display" class="text-gradient-blue"></span>.
+              </h3>
+              <p class="text-sm sm:text-base text-[#86868b] max-w-md mx-auto leading-relaxed">
+                Tus coordenadas están en manos del Alto Mando. Recibirás tu <span class="text-[#f5f5f7]">Ficha Secreta</span> por correo unos días antes del 3 de enero.
+              </p>
+            </div>
+
+            <div class="rounded-3xl bg-white/[0.04] border border-white/10 p-6 space-y-4 max-w-md mx-auto">
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#c084fc]">Siguiente fase</p>
+              <p class="text-sm text-[#a1a1a6] leading-relaxed">
+                Ayuda a <strong class="text-[#f5f5f7]">Lady Nebula</strong> a perfeccionar los roles del resto del grupo enviando rumores confidenciales.
+              </p>
+              <button type="button" onclick="goToRumorsFromSuccess()"
+                class="btn-apple-purple w-full py-3.5 px-6 text-sm font-medium cursor-pointer">
+                Abrir Buzón de Lady Nebula
+              </button>
+            </div>
+
+            <p class="text-xs text-[#6e6e73]">
+              Recuerda mantener silencio absoluto con Xenia sobre los detalles.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- =================================================================
+       VISTA 2: BUZÓN DE LADY NEBULA (PRE-JUEGO)
+       ================================================================= -->
+  <div id="view-rumors" class="hidden">
+    <section class="relative max-w-3xl mx-auto px-5 py-16 sm:py-24">
+      <div class="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 w-[620px] h-[280px] rounded-full bg-gradient-to-r from-[#662483]/35 via-[#a855f7]/25 to-[#0071e3]/25 blur-[110px]"></div>
+
+      <div class="relative z-10 space-y-8">
+        <!-- Cabecera Buzón -->
+        <div class="text-center max-w-2xl mx-auto space-y-4">
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[#c084fc]">
+            Archivo Confidencial · Pre-Juego
+          </p>
+          <h1 class="text-4xl sm:text-6xl font-semibold tracking-[-0.035em] text-[#f5f5f7]">
+            Buzón de <span class="text-gradient-orbital">Lady Nebula.</span>
+          </h1>
+          <p class="text-base sm:text-lg text-[#86868b] leading-relaxed">
+            Cuéntanos trapos sucios, manías inconfesables o invéntate rumores escandalosos sobre <span class="text-[#f5f5f7]">el resto de invitados</span>. Nadie sabrá quién envió cada soplo.
+          </p>
+        </div>
+
+        <!-- Formulario Buzón -->
+        <div class="bento-card p-7 sm:p-12">
+          <form id="rumor-form" class="space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label for="rumor-objetivo" class="block text-xs font-medium text-[#a1a1a6] mb-2">
+                  ¿Sobre qué invitado/a vas a escribir? *
+                </label>
+                <select id="rumor-objetivo" name="Invitado_Objetivo" required class="apple-input w-full px-4 py-3.5 text-sm">
+                  <option value="" disabled selected>Elige a tu víctima galáctica…</option>
+                  <option value="Sergio Romera">Sergio Romera</option>
+                  <option value="Miriam Gómez">Miriam Gómez</option>
+                  <option value="Marc Vallès (Viri)">Marc Vallès (Viri)</option>
+                  <option value="Sara García">Sara García</option>
+                  <option value="Mike">Mike</option>
+                  <option value="Bob">Bob</option>
+                  <option value="JM (Javi Morillas)">JM (Javi Morillas)</option>
+                  <option value="Irene">Irene</option>
+                  <option value="Adri">Adri</option>
+                  <option value="Sara (pareja de Adri)">Sara (pareja de Adri)</option>
+                  <option value="Varios / Todo el grupo">Varios / Todo el grupo</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="rumor-autor" class="block text-xs font-medium text-[#a1a1a6] mb-2">
+                  Tu Nombre (Opcional / Secreto)
+                </label>
+                <input type="text" id="rumor-autor" name="Informante_Secreto"
+                  placeholder="Déjalo vacío para modo anónimo"
+                  class="apple-input w-full px-4 py-3.5 text-sm placeholder-[#6e6e73]" />
+              </div>
+            </div>
+
+            <div>
+              <label for="rumor-mania" class="block text-xs font-medium text-[#a1a1a6] mb-2">
+                1. Manía, frase típica o "delito cotidiano" que debemos exagerar *
+              </label>
+              <textarea id="rumor-mania" name="Mania_o_Anécdota" rows="3" required
+                placeholder="Ej. Siempre discute con los árbitros, se escaquea para irse a casa a las 22h, intenta entrenarte aunque solo le pidas la hora…"
+                class="apple-input w-full px-4 py-3.5 text-sm placeholder-[#6e6e73] resize-none"></textarea>
+            </div>
+
+            <div>
+              <label for="rumor-soborno" class="block text-xs font-medium text-[#a1a1a6] mb-2">
+                2. ¿Con qué se le puede sobornar o sacar de quicio en 10 segundos?
+              </label>
+              <input type="text" id="rumor-soborno" name="Talon_de_Aquiles_o_Soborno"
+                placeholder="Ej. Con un buen dulce, criticando su película favorita, quitándole el sitio…"
+                class="apple-input w-full px-4 py-3.5 text-sm placeholder-[#6e6e73]" />
+            </div>
+
+            <div>
+              <label for="rumor-chisme" class="block text-xs font-medium text-[#a1a1a6] mb-2">
+                3. Rumor loco (falso o sospechosamente real) para la crónica de la gala
+              </label>
+              <textarea id="rumor-chisme" name="Rumor_para_Lady_Nebula" rows="2"
+                placeholder="Ej. 'Dicen que escondió un alijo ilegal en los motores de la nave' o alguna broma interna del grupo…"
+                class="apple-input w-full px-4 py-3.5 text-sm placeholder-[#6e6e73] resize-none"></textarea>
+            </div>
+
+            <div class="pt-3 space-y-3">
+              <button type="submit" id="rumor-submit-btn"
+                class="btn-apple-purple w-full py-4 px-6 text-sm sm:text-base font-medium cursor-pointer">
+                Enviar soplo a Lady Nebula
+              </button>
+              <p class="text-center text-xs text-[#6e6e73]">
+                Puedes enviar tantos informes anónimos como quieras, uno por invitado.
+              </p>
+            </div>
+
+            <p id="rumor-error-msg" class="hidden text-center text-xs text-rose-300 bg-rose-950/50 border border-rose-500/30 rounded-2xl p-3.5"></p>
+          </form>
+
+          <!-- Éxito Buzón -->
+          <div id="rumor-success-box" class="hidden text-center space-y-6 py-6">
+            <div class="w-16 h-16 mx-auto rounded-full bg-gradient-to-tr from-[#662483] to-[#2997ff] flex items-center justify-center shadow-[0_0_32px_rgba(168,85,247,0.45)]">
+              <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+            </div>
+            <div class="space-y-2">
+              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[#c084fc]">Expediente Archivado</p>
+              <h3 class="text-2xl sm:text-3xl font-semibold tracking-tight text-[#f5f5f7]">
+                Nota guardada sobre <span id="rumor-target-display" class="text-gradient-blue"></span>.
+              </h3>
+              <p class="text-sm sm:text-base text-[#86868b] max-w-md mx-auto">
+                Cuantos más invitados retrates, más impredecible y divertida será la gala.
+              </p>
+            </div>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <button type="button" onclick="resetRumorForm()"
+                class="btn-apple-purple w-full sm:w-auto px-7 py-3 text-sm font-medium cursor-pointer">
+                Delatar a otro invitado
+              </button>
+              <button type="button" onclick="switchView('main', 'top')"
+                class="w-full sm:w-auto px-7 py-3 rounded-full text-sm font-medium text-[#f5f5f7] bg-white/[0.08] hover:bg-white/[0.13] transition cursor-pointer">
+                Volver a la invitación
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- FOOTER MINIMALISTA ESTILO APPLE -->
+  <footer class="border-t border-white/[0.08] bg-black mt-12">
+    <div class="max-w-5xl mx-auto px-5 py-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#6e6e73]">
+      <p>Operación Órbita-X · Departamento de Inteligencia del Cumpleaños de Xenia</p>
+      <p>Domingo 3 de enero, 17:00h · Molins de Rei</p>
+    </div>
+  </footer>
+
+  <script>
+    const WEB3FORMS_KEY = "30ff5d7e-c034-41c5-9fe6-2d233bf95a21";
+
+    // --- Scroll Reveal estilo Apple ---
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // --- Navegación entre vistas ---
+    function switchView(view, sectionId = 'top') {
+      const viewMain = document.getElementById('view-main');
+      const viewRumors = document.getElementById('view-rumors');
+      const segMain = document.getElementById('seg-main');
+      const segRumors = document.getElementById('seg-rumors');
+
+      const activeSeg = ['bg-white', 'text-black', 'shadow-sm'];
+      const inactiveSeg = ['text-[#a1a1a6]', 'hover:text-white'];
+
+      if (view === 'rumors') {
+        viewMain.classList.add('hidden');
+        viewRumors.classList.remove('hidden');
+        segRumors.classList.add(...activeSeg);
+        segRumors.classList.remove(...inactiveSeg);
+        segMain.classList.remove(...activeSeg);
+        segMain.classList.add(...inactiveSeg);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        viewRumors.classList.add('hidden');
+        viewMain.classList.remove('hidden');
+        segMain.classList.add(...activeSeg);
+        segMain.classList.remove(...inactiveSeg);
+        segRumors.classList.remove(...activeSeg);
+        segRumors.classList.add(...inactiveSeg);
+
+        if (sectionId === 'top') {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          const target = document.getElementById(sectionId);
+          if (target) {
+            const yOffset = -110;
+            const y = target.getBoundingClientRect().top + window.scrollY + yOffset;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+          }
+        }
+      }
+    }
+
+    function goToRumorsFromSuccess() {
+      const guestName = document.getElementById('rsvp-nombre').value.trim();
+      if (guestName && !document.getElementById('rumor-autor').value) {
+        document.getElementById('rumor-autor').value = guestName;
+      }
+      switchView('rumors');
+    }
+
+    // --- Envío a Web3Forms ---
+    async function sendToWeb3Forms(formData) {
+      if (!WEB3FORMS_KEY.trim()) {
+        throw new Error("Falta configurar la Access Key de Web3Forms.");
+      }
+      formData.append("access_key", WEB3FORMS_KEY);
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData
+      });
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message || "Error al enviar los datos.");
+      }
+      return result;
+    }
+
+    // --- Formulario 1: Personaje ---
+    const rsvpForm = document.getElementById('rsvp-form');
+    const rsvpBtn = document.getElementById('rsvp-submit-btn');
+    const rsvpSuccess = document.getElementById('rsvp-success-box');
+    const rsvpError = document.getElementById('rsvp-error-msg');
+
+    rsvpForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      rsvpError.classList.add('hidden');
+
+      const originalText = rsvpBtn.textContent;
+      rsvpBtn.disabled = true;
+      rsvpBtn.textContent = "Transmitiendo registro…";
+
+      const formData = new FormData(rsvpForm);
+      const nombre = formData.get('Nombre');
+      formData.append("subject", `🚀 Personaje Órbita-X: ${nombre}`);
+      formData.append("from_name", "Gala Estelar Órbita-X");
+
+      try {
+        await sendToWeb3Forms(formData);
+        document.getElementById('guest-name-display').textContent = nombre;
+        rsvpForm.classList.add('hidden');
+        rsvpSuccess.classList.remove('hidden');
+      } catch (err) {
+        rsvpError.textContent = "⚠️ " + err.message;
+        rsvpError.classList.remove('hidden');
+        rsvpBtn.disabled = false;
+        rsvpBtn.textContent = originalText;
+      }
+    });
+
+    // --- Formulario 2: Buzón de Lady Nebula ---
+    const rumorForm = document.getElementById('rumor-form');
+    const rumorBtn = document.getElementById('rumor-submit-btn');
+    const rumorSuccess = document.getElementById('rumor-success-box');
+    const rumorError = document.getElementById('rumor-error-msg');
+
+    rumorForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      rumorError.classList.add('hidden');
+
+      const originalText = rumorBtn.textContent;
+      rumorBtn.disabled = true;
+      rumorBtn.textContent = "Enviando soplo a Lady Nebula…";
+
+      const formData = new FormData(rumorForm);
+      const objetivo = formData.get('Invitado_Objetivo');
+      const autor = formData.get('Informante_Secreto')?.trim() || "Anónimo";
+      formData.set('Informante_Secreto', autor);
+      formData.append("subject", `👁️ Rumor Lady Nebula sobre ${objetivo} (por ${autor})`);
+      formData.append("from_name", "Buzón de Lady Nebula");
+
+      try {
+        await sendToWeb3Forms(formData);
+        document.getElementById('rumor-target-display').textContent = objetivo;
+        rumorForm.classList.add('hidden');
+        rumorSuccess.classList.remove('hidden');
+      } catch (err) {
+        rumorError.textContent = "⚠️ " + err.message;
+        rumorError.classList.remove('hidden');
+      } finally {
+        rumorBtn.disabled = false;
+        rumorBtn.textContent = originalText;
+      }
+    });
+
+    function resetRumorForm() {
+      const savedAuthor = document.getElementById('rumor-autor').value;
+      rumorForm.reset();
+      document.getElementById('rumor-autor').value = savedAuthor;
+      rumorSuccess.classList.add('hidden');
+      rumorForm.classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>

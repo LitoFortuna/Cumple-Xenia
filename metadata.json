@@ -1,0 +1,6 @@
+{
+  "name": "Órbita-X — Gala Estelar del Ritmo 3027",
+  "description": "Invitación interactiva, registro de personaje y Buzón confidencial de Lady Nebula para la Gala Estelar del Ritmo 3027 y cumpleaños de Xenia.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
