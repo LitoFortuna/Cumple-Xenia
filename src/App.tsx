@@ -3,6 +3,7 @@ import { Navbar, type ActiveView } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { StorySection } from './components/StorySection';
 import { BriefingBento } from './components/BriefingBento';
+import { GalaGuideSection } from './components/GalaGuideSection';
 import { DressCodeSection } from './components/DressCodeSection';
 import { CharacterFormSection } from './components/CharacterFormSection';
 import { RumorMailboxView } from './components/RumorMailboxView';
@@ -11,8 +12,24 @@ import { SheetsConfirmModal } from './components/SheetsConfirmModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Footer } from './components/Footer';
 import { useOrganizerSheets } from './hooks/useOrganizerSheets';
+import {
+  EMPTY_GUEST_PROGRESS,
+  clearGuestProgress,
+  loadGuestProgress,
+  recordStep1Completed,
+  recordStep2Rumor,
+  saveGuestProgress,
+  type GuestProgress,
+} from './utils/guestProgress';
 
-const MAIN_SECTIONS = ['top', 'cronica', 'detalles', 'dresscode', 'personaje'] as const;
+const MAIN_SECTIONS = [
+  'top',
+  'cronica',
+  'detalles',
+  'como-funciona',
+  'dresscode',
+  'personaje',
+] as const;
 
 function getInitialView(): ActiveView {
   if (typeof window === 'undefined') return 'main';
@@ -26,7 +43,7 @@ function getInitialView(): ActiveView {
 export default function App() {
   const [activeView, setActiveView] = useState<ActiveView>(getInitialView);
   const [activeSection, setActiveSection] = useState<string>('top');
-  const [registeredGuestName, setRegisteredGuestName] = useState<string>('');
+  const [guestProgress, setGuestProgress] = useState<GuestProgress>(() => loadGuestProgress());
   const organizer = useOrganizerSheets(activeView === 'organizer');
 
   const scrollToSection = useCallback((sectionId: string) => {
@@ -55,9 +72,35 @@ export default function App() {
     [activeView, scrollToSection]
   );
 
+  const handleCharacterRegistered = useCallback((name: string, archetype: string) => {
+    setGuestProgress((prev) => {
+      const next = recordStep1Completed(prev, name, archetype);
+      saveGuestProgress(next);
+      return next;
+    });
+  }, []);
+
+  const handleRumorSubmitted = useCallback((target: string) => {
+    setGuestProgress((prev) => {
+      const next = recordStep2Rumor(prev, target);
+      saveGuestProgress(next);
+      return next;
+    });
+  }, []);
+
+  const handleResetGuestProgress = useCallback(() => {
+    clearGuestProgress();
+    setGuestProgress(EMPTY_GUEST_PROGRESS);
+  }, []);
+
   const handleNavigateRumors = useCallback((prefillAuthor?: string) => {
     if (typeof prefillAuthor === 'string' && prefillAuthor.trim()) {
-      setRegisteredGuestName(prefillAuthor.trim());
+      setGuestProgress((prev) => {
+        if (prev.guestName.trim()) return prev;
+        const next = recordStep1Completed(prev, prefillAuthor.trim(), prev.archetype);
+        saveGuestProgress(next);
+        return next;
+      });
     }
     setActiveView('rumors');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -93,6 +136,7 @@ export default function App() {
         <Navbar
           activeView={activeView}
           activeSection={activeSection}
+          guestProgress={guestProgress}
           onNavigateMain={handleNavigateMain}
           onNavigateRumors={() => handleNavigateRumors()}
         />
@@ -101,26 +145,30 @@ export default function App() {
           {activeView === 'main' ? (
             <div key="view-main" className="animate-fade-up">
               <HeroSection
-                completedGuestName={registeredGuestName}
+                guestProgress={guestProgress}
                 onStartCharacter={() => handleNavigateMain('personaje')}
                 onOpenRumors={() => handleNavigateRumors()}
+                onResetGuestProgress={handleResetGuestProgress}
               />
               <StorySection />
               <BriefingBento
-                completedGuestName={registeredGuestName}
+                guestProgress={guestProgress}
                 onStartCharacter={() => handleNavigateMain('personaje')}
                 onOpenRumors={() => handleNavigateRumors()}
               />
+              <GalaGuideSection />
               <DressCodeSection />
               <CharacterFormSection
-                onRegistered={(name) => setRegisteredGuestName(name)}
+                guestProgress={guestProgress}
+                onRegistered={handleCharacterRegistered}
                 onOpenRumors={(author) => handleNavigateRumors(author)}
               />
             </div>
           ) : activeView === 'rumors' ? (
             <div key="view-rumors" className="animate-fade-up">
               <RumorMailboxView
-                initialAuthor={registeredGuestName}
+                guestProgress={guestProgress}
+                onRumorSubmitted={handleRumorSubmitted}
                 onBackToInvitation={() => handleNavigateMain('top')}
                 onGoToCreateCharacter={() => handleNavigateMain('personaje')}
               />

@@ -9,9 +9,11 @@ import {
   type ValidationErrors,
 } from '../utils/orbitaLogic';
 import { submitCharacterToVault } from '../utils/submissionsStore';
+import type { GuestProgress } from '../utils/guestProgress';
 
 interface CharacterFormSectionProps {
-  onRegistered: (guestName: string) => void;
+  guestProgress: GuestProgress;
+  onRegistered: (guestName: string, archetype: string) => void;
   onOpenRumors: (prefillAuthor?: string) => void;
 }
 
@@ -24,6 +26,7 @@ const INITIAL_VALUES: CharacterFormValues = {
 };
 
 export function CharacterFormSection({
+  guestProgress,
   onRegistered,
   onOpenRumors,
 }: CharacterFormSectionProps) {
@@ -73,7 +76,7 @@ export function CharacterFormSection({
         nombre: guestName,
         perfil: guestArchetype,
       });
-      onRegistered(guestName);
+      onRegistered(guestName, guestArchetype);
     } catch {
       setSubmitError(
         'No hemos podido guardar tu ficha en este momento. Comprueba tu conexión e inténtalo de nuevo.'
@@ -125,6 +128,40 @@ export function CharacterFormSection({
                   <span className="text-[#f3f4f6]">Paso 2: Buzón de Lady Nebula</span>.
                 </p>
               </div>
+
+              {guestProgress.step1Completed && (
+                <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-y border-white/[0.08] py-4">
+                  <div className="flex items-start gap-2.5">
+                    <Check
+                      className="mt-0.5 h-4 w-4 shrink-0 text-[#34d399]"
+                      aria-hidden="true"
+                    />
+                    <div className="space-y-0.5 text-left">
+                      <p className="text-xs sm:text-sm font-medium text-[#d1fae5]">
+                        Paso 1 ya completado en este dispositivo como{' '}
+                        <span className="font-semibold text-white">
+                          {guestProgress.guestName}
+                        </span>
+                      </p>
+                      <p className="text-xs text-[#9ca3af]">
+                        {guestProgress.rumorCount > 0
+                          ? `También llevas ${guestProgress.rumorCount} ${guestProgress.rumorCount === 1 ? 'soplo enviado' : 'soplos enviados'} en el Buzón. Si entra otra persona desde aquí, puede registrar su ficha abajo.`
+                          : 'Ya puedes pasar directamente al Paso 2, o registrar aquí la ficha de otra persona.'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onOpenRumors(guestProgress.guestName)}
+                    className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-[#6d28d9] to-[#2563eb] px-4 py-2 text-xs sm:text-sm font-medium text-white whitespace-nowrap transition-opacity hover:opacity-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa]"
+                  >
+                    <span>
+                      {guestProgress.rumorCount > 0 ? 'Enviar más rumores' : 'Ir al Paso 2: Buzón'}
+                    </span>
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                </div>
+              )}
 
               <form onSubmit={(e) => void handleSubmit(e)} noValidate className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">

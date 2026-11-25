@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { ArrowRight, Check, Circle, Menu, X } from 'lucide-react';
 import { EVENT_CONFIG } from '../data/eventData';
+import {
+  getCompletedStepsCount,
+  type GuestProgress,
+} from '../utils/guestProgress';
 import { AmbientSoundControl } from './AmbientSoundControl';
 
 export type ActiveView = 'main' | 'rumors' | 'organizer';
@@ -8,6 +12,7 @@ export type ActiveView = 'main' | 'rumors' | 'organizer';
 interface NavbarProps {
   activeView: ActiveView;
   activeSection: string;
+  guestProgress: GuestProgress;
   onNavigateMain: (sectionId?: string) => void;
   onNavigateRumors: () => void;
 }
@@ -15,10 +20,14 @@ interface NavbarProps {
 export function Navbar({
   activeView,
   activeSection,
+  guestProgress,
   onNavigateMain,
   onNavigateRumors,
 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const completedCount = getCompletedStepsCount(guestProgress);
+  const step1Done = guestProgress.step1Completed;
+  const step2Done = guestProgress.rumorCount > 0;
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -107,7 +116,7 @@ export function Navbar({
           <button
             type="button"
             onClick={() => handleNavMain('personaje')}
-            className="inline-flex min-h-[40px] items-center justify-center rounded-full bg-[#2563eb] px-4 py-2 text-xs sm:text-sm font-medium text-white whitespace-nowrap shrink-0 transition-all duration-150 hover:bg-[#1d4ed8] active:scale-[0.98] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#60a5fa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#06070b]"
+            className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[#2563eb] px-4 py-2 text-xs sm:text-sm font-medium text-white whitespace-nowrap shrink-0 transition-all duration-150 hover:bg-[#1d4ed8] active:scale-[0.98] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#60a5fa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#06070b]"
           >
             Crear ficha
           </button>
@@ -132,51 +141,124 @@ export function Navbar({
           aria-label="Navegación móvil"
           className="md:hidden border-t border-white/[0.08] bg-[#0b0d14]/98 backdrop-blur-2xl animate-fade-up"
         >
-            <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-4">
+          <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-4">
+            {/* Compact guest progress summary inside drawer */}
+            <div className="mb-2 border-b border-white/[0.08] pb-3.5 px-2 space-y-2.5">
+              <div className="flex items-center justify-between gap-2 text-xs">
+                <span className="font-medium text-[#d1d5db]">
+                  {step1Done ? `Tu progreso · ${guestProgress.guestName}` : 'Tu progreso previo'}
+                </span>
+                <span
+                  className={`font-medium tabular-nums ${
+                    completedCount === 2
+                      ? 'text-[#34d399]'
+                      : completedCount === 1
+                        ? 'text-[#93c5fd]'
+                        : 'text-[#9ca3af]'
+                  }`}
+                >
+                  {completedCount} de 2
+                </span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs">
+                <span
+                  className={`inline-flex items-center gap-1.5 ${
+                    step1Done ? 'text-[#34d399]' : 'text-[#9ca3af]'
+                  }`}
+                >
+                  {step1Done ? (
+                    <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  ) : (
+                    <Circle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  )}
+                  <span>{step1Done ? 'Paso 1: Personaje listo' : 'Paso 1: Pendiente'}</span>
+                </span>
+                <span
+                  className={`inline-flex items-center gap-1.5 ${
+                    step2Done ? 'text-[#34d399]' : 'text-[#c4b5fd]'
+                  }`}
+                >
+                  {step2Done ? (
+                    <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  ) : (
+                    <Circle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  )}
+                  <span>
+                    {step2Done
+                      ? `Paso 2: ${guestProgress.rumorCount} ${guestProgress.rumorCount === 1 ? 'soplo' : 'soplos'}`
+                      : 'Paso 2: Buzón pendiente'}
+                  </span>
+                </span>
+              </div>
+
               <button
                 type="button"
-                onClick={() => handleNavMain('top')}
-                className={`flex min-h-[44px] w-full items-center justify-between rounded-xl px-4 text-left text-base font-medium transition-colors cursor-pointer ${
-                  activeView === 'main' && activeSection === 'top'
-                    ? 'bg-white/[0.08] text-white'
-                    : 'text-[#d1d5db] hover:bg-white/[0.05] hover:text-white'
-                }`}
+                onClick={() => (step1Done ? handleNavRumors() : handleNavMain('personaje'))}
+                className="inline-flex min-h-[44px] w-full items-center justify-between rounded-xl bg-white/[0.05] px-3.5 text-xs font-medium text-white transition-colors hover:bg-white/[0.09] cursor-pointer"
               >
-                <span>Invitación</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleNavMain('cronica')}
-                className="flex min-h-[44px] w-full items-center justify-between rounded-xl px-4 text-left text-base font-medium text-[#d1d5db] transition-colors hover:bg-white/[0.05] hover:text-white cursor-pointer"
-              >
-                <span>Historia</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleNavMain('detalles')}
-                className="flex min-h-[44px] w-full items-center justify-between rounded-xl px-4 text-left text-base font-medium text-[#d1d5db] transition-colors hover:bg-white/[0.05] hover:text-white cursor-pointer"
-              >
-                <span>Detalles</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleNavMain('dresscode')}
-                className="flex min-h-[44px] w-full items-center justify-between rounded-xl px-4 text-left text-base font-medium text-[#d1d5db] transition-colors hover:bg-white/[0.05] hover:text-white cursor-pointer"
-              >
-                <span>Dress Code</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleNavRumors}
-                className={`flex min-h-[44px] w-full items-center justify-between rounded-xl px-4 text-left text-base font-medium transition-colors cursor-pointer ${
-                  activeView === 'rumors'
-                    ? 'bg-[#7c3aed]/20 text-white'
-                    : 'text-[#c4b5fd] hover:bg-white/[0.05] hover:text-white'
-                }`}
-              >
-                <span>Buzón Lady Nebula</span>
+                <span>
+                  {!step1Done
+                    ? 'Empezar Paso 1: Crear personaje'
+                    : !step2Done
+                      ? 'Ir al Paso 2: Buzón de Lady Nebula'
+                      : 'Enviar más rumores al Buzón'}
+                </span>
+                <ArrowRight className="h-3.5 w-3.5 shrink-0 text-[#93c5fd]" aria-hidden="true" />
               </button>
             </div>
+
+            <button
+              type="button"
+              onClick={() => handleNavMain('top')}
+              className={`flex min-h-[44px] w-full items-center justify-between rounded-xl px-4 text-left text-base font-medium transition-colors cursor-pointer ${
+                activeView === 'main' && activeSection === 'top'
+                  ? 'bg-white/[0.08] text-white'
+                  : 'text-[#d1d5db] hover:bg-white/[0.05] hover:text-white'
+              }`}
+            >
+              <span>Invitación</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleNavMain('cronica')}
+              className="flex min-h-[44px] w-full items-center justify-between rounded-xl px-4 text-left text-base font-medium text-[#d1d5db] transition-colors hover:bg-white/[0.05] hover:text-white cursor-pointer"
+            >
+              <span>Historia</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleNavMain('detalles')}
+              className="flex min-h-[44px] w-full items-center justify-between rounded-xl px-4 text-left text-base font-medium text-[#d1d5db] transition-colors hover:bg-white/[0.05] hover:text-white cursor-pointer"
+            >
+              <span>Detalles</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleNavMain('como-funciona')}
+              className="flex min-h-[44px] w-full items-center justify-between rounded-xl px-4 text-left text-base font-medium text-[#d1d5db] transition-colors hover:bg-white/[0.05] hover:text-white cursor-pointer"
+            >
+              <span>Cómo funciona</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleNavMain('dresscode')}
+              className="flex min-h-[44px] w-full items-center justify-between rounded-xl px-4 text-left text-base font-medium text-[#d1d5db] transition-colors hover:bg-white/[0.05] hover:text-white cursor-pointer"
+            >
+              <span>Dress Code</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleNavRumors}
+              className={`flex min-h-[44px] w-full items-center justify-between rounded-xl px-4 text-left text-base font-medium transition-colors cursor-pointer ${
+                activeView === 'rumors'
+                  ? 'bg-[#7c3aed]/20 text-white'
+                  : 'text-[#c4b5fd] hover:bg-white/[0.05] hover:text-white'
+              }`}
+            >
+              <span>Buzón Lady Nebula</span>
+            </button>
+          </div>
         </nav>
       )}
     </header>

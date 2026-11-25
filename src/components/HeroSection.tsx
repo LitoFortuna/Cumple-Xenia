@@ -2,18 +2,22 @@ import { useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { EVENT_CONFIG } from '../data/eventData';
 import { computeCountdown, padTwo } from '../utils/orbitaLogic';
+import { getProgressStage, type GuestProgress } from '../utils/guestProgress';
 import { MissionStepsBar } from './MissionStepsBar';
+import { BoardingPassCard } from './BoardingPassCard';
 
 interface HeroSectionProps {
-  completedGuestName: string;
+  guestProgress: GuestProgress;
   onStartCharacter: () => void;
   onOpenRumors: () => void;
+  onResetGuestProgress: () => void;
 }
 
 export function HeroSection({
-  completedGuestName,
+  guestProgress,
   onStartCharacter,
   onOpenRumors,
+  onResetGuestProgress,
 }: HeroSectionProps) {
   const [countdown, setCountdown] = useState(() =>
     computeCountdown(EVENT_CONFIG.eventDateISO)
@@ -26,7 +30,7 @@ export function HeroSection({
     return () => window.clearInterval(timer);
   }, []);
 
-  const step1Done = Boolean(completedGuestName.trim());
+  const stage = getProgressStage(guestProgress);
 
   return (
     <section id="top" className="relative overflow-hidden pt-12 sm:pt-18 lg:pt-22">
@@ -47,7 +51,7 @@ export function HeroSection({
             <span className="hidden sm:inline text-[#9ca3af]">Alto secreto frente a la Comisaria Xenia</span>
           </p>
 
-          <h1 className="mx-auto max-w-4xl font-display text-[clamp(2.65rem,7vw,5.25rem)] font-semibold leading-[1.03] tracking-[-0.035em] text-[#f9fafb]">
+          <h1 className="mx-auto max-w-4xl font-display text-[clamp(2.5rem,7vw,5.25rem)] font-semibold leading-[1.03] tracking-[-0.035em] text-[#f9fafb]">
             El Escándalo de{' '}
             <span className="text-gradient-orbital block sm:inline">Órbita-X.</span>
           </h1>
@@ -59,9 +63,9 @@ export function HeroSection({
             </span>
           </p>
 
-          {/* Primary + secondary action pair reflecting explicit 1 -> 2 order */}
+          {/* Primary + secondary action pair reflecting explicit 0/2 -> 1/2 -> 2/2 progress */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 pt-2">
-            {!step1Done ? (
+            {stage === 'none' ? (
               <>
                 <button
                   type="button"
@@ -84,7 +88,7 @@ export function HeroSection({
                   />
                 </button>
               </>
-            ) : (
+            ) : stage === 'step1-only' ? (
               <>
                 <button
                   type="button"
@@ -100,17 +104,43 @@ export function HeroSection({
                   onClick={onStartCharacter}
                   className="inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center rounded-full px-5 py-3 text-sm sm:text-base font-medium text-[#93c5fd] whitespace-nowrap transition-colors duration-150 hover:text-white cursor-pointer"
                 >
-                  Ver mi registro ({completedGuestName})
+                  Paso 1 listo ({guestProgress.guestName})
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={onOpenRumors}
+                  className="inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#6d28d9] via-[#7c3aed] to-[#2563eb] px-8 py-3.5 text-sm sm:text-base font-medium text-white whitespace-nowrap transition-all duration-150 hover:opacity-95 hover:shadow-[0_12px_32px_rgba(124,58,237,0.36)] active:scale-[0.98] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa]"
+                >
+                  <span>Enviar otro rumor a Lady Nebula</span>
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onStartCharacter}
+                  className="inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center rounded-full px-5 py-3 text-sm sm:text-base font-medium text-[#34d399] whitespace-nowrap transition-colors duration-150 hover:text-white cursor-pointer"
+                >
+                  Misión previa lista ({guestProgress.guestName})
                 </button>
               </>
             )}
           </div>
 
-          {/* Unmistakable 2-Step Order Roadmap */}
+          {/* Unmistakable Persistent 2-Step Order Roadmap */}
           <MissionStepsBar
-            completedGuestName={completedGuestName}
+            guestProgress={guestProgress}
             onGoToStep1={onStartCharacter}
             onGoToStep2={onOpenRumors}
+          />
+
+          {/* Personalized 3027 Boarding Pass once Step 1 is complete */}
+          <BoardingPassCard
+            progress={guestProgress}
+            onOpenRumors={onOpenRumors}
+            onResetProgress={onResetGuestProgress}
           />
 
           {/* Live tabular countdown strip */}

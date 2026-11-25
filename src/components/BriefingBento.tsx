@@ -1,19 +1,22 @@
 import { useState } from 'react';
-import { ArrowRight, Check, Copy } from 'lucide-react';
+import { ArrowRight, CalendarPlus, Check, Copy } from 'lucide-react';
 import { EVENT_CONFIG } from '../data/eventData';
+import { downloadGalaCalendarFile } from '../utils/calendarIcs';
+import type { GuestProgress } from '../utils/guestProgress';
 
 interface BriefingBentoProps {
-  completedGuestName: string;
+  guestProgress: GuestProgress;
   onStartCharacter: () => void;
   onOpenRumors: () => void;
 }
 
 export function BriefingBento({
-  completedGuestName,
+  guestProgress,
   onStartCharacter,
   onOpenRumors,
 }: BriefingBentoProps) {
   const [copiedCoords, setCopiedCoords] = useState(false);
+  const [calendarSaved, setCalendarSaved] = useState(false);
 
   const handleCopyCoordinates = async () => {
     try {
@@ -25,6 +28,15 @@ export function BriefingBento({
       window.setTimeout(() => setCopiedCoords(false), 2400);
     }
   };
+
+  const handleDownloadCalendar = () => {
+    downloadGalaCalendarFile();
+    setCalendarSaved(true);
+    window.setTimeout(() => setCalendarSaved(false), 2600);
+  };
+
+  const step1Done = guestProgress.step1Completed;
+  const step2Done = guestProgress.rumorCount > 0;
 
   return (
     <section
@@ -39,8 +51,8 @@ export function BriefingBento({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-5">
-        {/* Card 1: Fecha y Hora */}
-        <article className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0e1017] p-6 sm:p-8 lg:p-10 sm:col-span-2 lg:col-span-7 flex flex-col justify-between min-h-[240px] transition-colors duration-200 hover:border-white/[0.15]">
+        {/* Card 1: Fecha y Hora + Calendar Export */}
+        <article className="interactive-surface relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0e1017] p-6 sm:p-8 lg:p-10 sm:col-span-2 lg:col-span-7 flex flex-col justify-between min-h-[240px] hover:border-white/[0.15]">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute -top-20 -right-20 h-56 w-56 rounded-full bg-[#2563eb]/20 blur-[70px]"
@@ -58,13 +70,30 @@ export function BriefingBento({
               <span className="text-[#f9fafb] tabular-nums">{EVENT_CONFIG.timeLabel}</span>
             </p>
           </div>
-          <p className="relative z-10 mt-6 text-sm text-[#9ca3af]">
-            {EVENT_CONFIG.durationLabel}
-          </p>
+          <div className="relative z-10 mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06] pt-4">
+            <p className="text-xs sm:text-sm text-[#9ca3af]">{EVENT_CONFIG.durationLabel}</p>
+            <button
+              type="button"
+              onClick={handleDownloadCalendar}
+              className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-[#93c5fd] whitespace-nowrap transition-colors hover:bg-white/[0.06] hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3b82f6]"
+            >
+              {calendarSaved ? (
+                <>
+                  <Check className="h-3.5 w-3.5 text-[#34d399]" aria-hidden="true" />
+                  <span className="text-[#34d399]">Evento descargado</span>
+                </>
+              ) : (
+                <>
+                  <CalendarPlus className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span>Añadir al calendario</span>
+                </>
+              )}
+            </button>
+          </div>
         </article>
 
         {/* Card 2: Silencio Total */}
-        <article className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0e1017] p-6 sm:p-8 lg:p-10 lg:col-span-5 flex flex-col justify-between min-h-[240px] transition-colors duration-200 hover:border-white/[0.15]">
+        <article className="interactive-surface relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0e1017] p-6 sm:p-8 lg:p-10 lg:col-span-5 flex flex-col justify-between min-h-[240px] hover:border-white/[0.15]">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute -bottom-20 -right-14 h-52 w-52 rounded-full bg-[#6d28d9]/25 blur-[70px]"
@@ -84,7 +113,7 @@ export function BriefingBento({
         </article>
 
         {/* Card 3: Coordenadas */}
-        <article className="rounded-3xl border border-white/[0.08] bg-[#0e1017] p-6 sm:p-8 lg:p-10 lg:col-span-5 flex flex-col justify-between min-h-[220px] transition-colors duration-200 hover:border-white/[0.15]">
+        <article className="interactive-surface rounded-3xl border border-white/[0.08] bg-[#0e1017] p-6 sm:p-8 lg:p-10 lg:col-span-5 flex flex-col justify-between min-h-[220px] hover:border-white/[0.15]">
           <p className="text-xs font-medium tracking-wide text-[#9ca3af]">Coordenadas</p>
           <div className="mt-5 space-y-1.5">
             <h3 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.025em] text-[#f9fafb]">
@@ -99,7 +128,7 @@ export function BriefingBento({
             <button
               type="button"
               onClick={handleCopyCoordinates}
-              className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-[#93c5fd] transition-colors hover:bg-white/[0.06] hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3b82f6]"
+              className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-[#93c5fd] whitespace-nowrap transition-colors hover:bg-white/[0.06] hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3b82f6]"
             >
               {copiedCoords ? (
                 <>
@@ -117,29 +146,38 @@ export function BriefingBento({
         </article>
 
         {/* Card 4: Pre-juego Lady Nebula (Paso 2) */}
-        <article className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0e1017] p-6 sm:p-8 lg:p-10 sm:col-span-2 lg:col-span-7 flex flex-col justify-between min-h-[220px] transition-colors duration-200 hover:border-white/[0.15]">
+        <article className="interactive-surface relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0e1017] p-6 sm:p-8 lg:p-10 sm:col-span-2 lg:col-span-7 flex flex-col justify-between min-h-[220px] hover:border-white/[0.15]">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#5b21b6]/15 via-transparent to-[#2563eb]/15"
           />
-          <p className="relative z-10 text-xs font-medium tracking-wide text-[#c4b5fd]">
-            Paso 2 · Después de crear tu personaje
+          <p
+            className={`relative z-10 text-xs font-medium tracking-wide ${
+              step2Done ? 'text-[#34d399]' : 'text-[#c4b5fd]'
+            }`}
+          >
+            {step2Done
+              ? `Paso 2 completado · ${guestProgress.rumorCount} ${guestProgress.rumorCount === 1 ? 'rumor enviado' : 'rumores enviados'}`
+              : 'Paso 2 · Después de crear tu personaje'}
           </p>
           <div className="relative z-10 mt-5 space-y-3">
             <h3 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.025em] text-[#f9fafb]">
-              Primero crea tu ficha; luego incendia la gala.
+              {step2Done
+                ? 'Tu pólvora ya está en el buzón.'
+                : 'Primero crea tu ficha; luego incendia la gala.'}
             </h3>
             <p className="max-w-xl text-sm sm:text-base leading-relaxed text-[#9ca3af]">
-              En cuanto registres tu personaje (Paso 1), entra al Buzón de Lady Nebula (Paso 2)
-              para filtrar manías, sobornos o rumores anónimos sobre el resto de invitados.
+              {step2Done
+                ? 'Si recuerdas alguna anécdota más sobre otro invitado, el Buzón de Lady Nebula sigue abierto.'
+                : 'En cuanto registres tu personaje (Paso 1), entra al Buzón de Lady Nebula (Paso 2) para filtrar manías, sobornos o rumores anónimos sobre el resto de invitados.'}
             </p>
             <div className="flex flex-wrap items-center gap-4 pt-1">
-              {!completedGuestName ? (
+              {!step1Done ? (
                 <>
                   <button
                     type="button"
                     onClick={onStartCharacter}
-                    className="group inline-flex min-h-[40px] items-center gap-2 text-sm font-medium text-[#93c5fd] transition-colors hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3b82f6] rounded-sm"
+                    className="group inline-flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#93c5fd] transition-colors hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3b82f6] rounded-sm"
                   >
                     <span>Empezar por Paso 1: Crear personaje</span>
                     <ArrowRight
@@ -150,7 +188,7 @@ export function BriefingBento({
                   <button
                     type="button"
                     onClick={onOpenRumors}
-                    className="inline-flex min-h-[40px] items-center gap-1.5 text-sm font-medium text-[#9ca3af] transition-colors hover:text-[#c4b5fd] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b5cf6] rounded-sm"
+                    className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-[#9ca3af] transition-colors hover:text-[#c4b5fd] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b5cf6] rounded-sm"
                   >
                     <span>Ir al Paso 2: Buzón</span>
                   </button>
@@ -159,9 +197,13 @@ export function BriefingBento({
                 <button
                   type="button"
                   onClick={onOpenRumors}
-                  className="group inline-flex min-h-[40px] items-center gap-2 text-sm font-medium text-[#c4b5fd] transition-colors hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b5cf6] rounded-sm"
+                  className="group inline-flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#c4b5fd] transition-colors hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b5cf6] rounded-sm"
                 >
-                  <span>Continuar al Paso 2: Buzón de Lady Nebula</span>
+                  <span>
+                    {step2Done
+                      ? 'Añadir otro rumor en Lady Nebula'
+                      : 'Continuar al Paso 2: Buzón de Lady Nebula'}
+                  </span>
                   <ArrowRight
                     className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-1"
                     aria-hidden="true"

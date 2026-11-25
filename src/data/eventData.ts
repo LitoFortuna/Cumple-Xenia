@@ -116,3 +116,43 @@ export const DRESS_CODE_STYLES: DressCodeStyle[] = [
     avoid: 'Ir 100% rígido sin ningún contraste urbano o futurista.',
   },
 ];
+
+export interface GalaFaqItem {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+export const GALA_FAQ_ITEMS: GalaFaqItem[] = [
+  {
+    id: 'experiencia',
+    question: '¿Hace falta saber actuar o haber jugado antes a un Cluedo en Vivo?',
+    answer:
+      'Para nada. Tu ficha privada incluirá pistas claras, objetivos concretos y pequeñas misiones para romper el hielo. Puedes meterte todo lo teatral que te apetezca o jugar a tu ritmo observando y negociando.',
+  },
+  {
+    id: 'ficha',
+    question: '¿Cuándo y cómo recibiré mi personaje secreto?',
+    answer:
+      'Con lo que rellenes en el Paso 1 y los rumores confidenciales del Paso 2, la organización preparará tu ficha personalizada y te la enviará por privado unos días antes de la gala. Recuerda no enseñársela a nadie.',
+  },
+  {
+    id: 'dinamica',
+    question: '¿Cómo transcurre la tarde del domingo 3 de enero?',
+    answer:
+      'Abriremos puertas a las 17:00h con música y briefing inicial. Durante 90 a 120 minutos investigaréis pruebas escondidas, intercambiaréis secretos, formaréis alianzas y responderéis al interrogatorio final ante la Comisaria Xenia.',
+  },
+  {
+    id: 'rumores',
+    question: '¿Qué pasa con lo que envío en el Buzón de Lady Nebula?',
+    answer:
+      'Solo lo lee la organización para entretejer guiños, chismes y bromas internas en la trama de la gala. Puedes enviar tus soplos en modo anónimo y repetir las veces que quieras sobre distintos invitados.',
+  },
+  {
+    id: 'silencio',
+    question: '¿Qué puede saber Xenia antes del día de la fiesta?',
+    answer:
+      'Lo mínimo imprescindible: sabe que celebramos su cumpleaños, pero desconoce por completo la historia de Órbita-X, los roles, las pruebas y el Buzón de Lady Nebula. Silencio absoluto en grupos donde esté ella.',
+  },
+];
+

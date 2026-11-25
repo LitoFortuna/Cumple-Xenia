@@ -9,18 +9,22 @@ import {
   type ValidationErrors,
 } from '../utils/orbitaLogic';
 import { submitRumorToVault } from '../utils/submissionsStore';
+import type { GuestProgress } from '../utils/guestProgress';
 
 interface RumorMailboxViewProps {
-  initialAuthor: string;
+  guestProgress: GuestProgress;
+  onRumorSubmitted: (target: string) => void;
   onBackToInvitation: () => void;
   onGoToCreateCharacter: () => void;
 }
 
 export function RumorMailboxView({
-  initialAuthor,
+  guestProgress,
+  onRumorSubmitted,
   onBackToInvitation,
   onGoToCreateCharacter,
 }: RumorMailboxViewProps) {
+  const initialAuthor = guestProgress.guestName;
   const [values, setValues] = useState<RumorFormValues>({
     objetivo: '',
     autor: initialAuthor,
@@ -33,7 +37,6 @@ export function RumorMailboxView({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [lastSubmittedTarget, setLastSubmittedTarget] = useState<string | null>(null);
-  const [submittedTargets, setSubmittedTargets] = useState<string[]>([]);
 
   useEffect(() => {
     if (initialAuthor.trim() && !values.autor.trim()) {
@@ -84,7 +87,7 @@ export function RumorMailboxView({
     try {
       await submitRumorToVault(values);
       setLastSubmittedTarget(target);
-      setSubmittedTargets((prev) => (prev.includes(target) ? prev : [...prev, target]));
+      onRumorSubmitted(target);
     } catch {
       setSubmitError(
         'No hemos podido archivar tu soplo en este momento. Comprueba tu conexión e inténtalo de nuevo.'
@@ -123,19 +126,21 @@ export function RumorMailboxView({
       />
 
       <div className="relative z-10 space-y-8">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <button
             type="button"
             onClick={onBackToInvitation}
-            className="inline-flex min-h-[40px] items-center gap-2 text-sm font-medium text-[#9ca3af] transition-colors hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b5cf6] rounded-sm"
+            className="inline-flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#9ca3af] transition-colors hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b5cf6] rounded-sm"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             <span>Volver a la invitación</span>
           </button>
 
-          {submittedTargets.length > 0 && (
+          {guestProgress.rumorCount > 0 && (
             <p className="text-xs sm:text-sm text-[#c4b5fd] tabular-nums">
-              Soplos enviados en esta sesión: {submittedTargets.length}
+              {guestProgress.rumorCount === 1
+                ? '1 soplo enviado desde este dispositivo'
+                : `${guestProgress.rumorCount} soplos enviados desde este dispositivo`}
             </p>
           )}
         </div>
@@ -154,8 +159,8 @@ export function RumorMailboxView({
           </p>
         </div>
 
-        {/* Clear Step 1 prerequisite reminder if character not yet created in this session */}
-        {!initialAuthor.trim() ? (
+        {/* 3-stage persistent progress banner */}
+        {!guestProgress.step1Completed ? (
           <div
             role="region"
             aria-label="Aviso de Paso 1 pendiente"
@@ -178,10 +183,23 @@ export function RumorMailboxView({
               Ir al Paso 1: Crear personaje
             </button>
           </div>
+        ) : guestProgress.rumorCount === 0 ? (
+          <div className="flex items-center justify-center gap-2 rounded-2xl border border-[#34d399]/30 bg-[#34d399]/10 px-5 py-3.5 text-center text-xs sm:text-sm text-[#d1fae5]">
+            <Check className="h-4 w-4 shrink-0 text-[#34d399]" aria-hidden="true" />
+            <span>
+              Paso 1 completado ({guestProgress.guestName}) · Ahora estás en el{' '}
+              <strong className="text-white">Paso 2: Buzón de Lady Nebula</strong>.
+            </span>
+          </div>
         ) : (
-          <div className="rounded-2xl border border-[#34d399]/30 bg-[#34d399]/10 px-5 py-3.5 text-center text-xs sm:text-sm text-[#d1fae5]">
-            Paso 1 completado ({initialAuthor}) · Ahora estás en el{' '}
-            <strong className="text-white">Paso 2: Buzón de Lady Nebula</strong>.
+          <div className="flex items-center justify-center gap-2 rounded-2xl border border-[#34d399]/35 bg-[#34d399]/12 px-5 py-3.5 text-center text-xs sm:text-sm text-[#d1fae5] tabular-nums">
+            <Check className="h-4 w-4 shrink-0 text-[#34d399]" aria-hidden="true" />
+            <span>
+              <strong className="text-white">¡Paso 1 y Paso 2 completados!</strong> (
+              {guestProgress.guestName} · {guestProgress.rumorCount}{' '}
+              {guestProgress.rumorCount === 1 ? 'soplo enviado' : 'soplos enviados'}) · Puedes
+              añadir más rumores abajo.
+            </span>
           </div>
         )}
 
@@ -386,10 +404,10 @@ export function RumorMailboxView({
                 </p>
               </div>
 
-              {submittedTargets.length > 0 && (
+              {guestProgress.rumorTargets.length > 0 && (
                 <p className="text-xs text-[#9ca3af]">
-                  Invitados retratados en esta sesión:{' '}
-                  <span className="text-[#e5e7eb]">{submittedTargets.join(' · ')}</span>
+                  Invitados retratados desde este dispositivo:{' '}
+                  <span className="text-[#e5e7eb]">{guestProgress.rumorTargets.join(' · ')}</span>
                 </p>
               )}
 
