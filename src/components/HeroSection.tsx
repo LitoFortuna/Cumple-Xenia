@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
 import { EVENT_CONFIG } from '../data/eventData';
 import { computeCountdown, padTwo } from '../utils/orbitaLogic';
-import { getProgressStage, type GuestProgress } from '../utils/guestProgress';
+import type { GuestProgress } from '../utils/guestProgress';
 import { MissionStepsBar } from './MissionStepsBar';
 import { BoardingPassCard } from './BoardingPassCard';
 
@@ -29,8 +28,6 @@ export function HeroSection({
     }, 1000);
     return () => window.clearInterval(timer);
   }, []);
-
-  const stage = getProgressStage(guestProgress);
 
   return (
     <section id="top" className="relative overflow-hidden pt-12 sm:pt-18 lg:pt-22">
@@ -62,72 +59,6 @@ export function HeroSection({
               Domingo 3 de enero a las 17:00h.
             </span>
           </p>
-
-          {/* Primary + secondary action pair reflecting explicit 0/2 -> 1/2 -> 2/2 progress */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 pt-2">
-            {stage === 'none' ? (
-              <>
-                <button
-                  type="button"
-                  onClick={onStartCharacter}
-                  className="inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-[#2563eb] px-8 py-3.5 text-sm sm:text-base font-medium text-white whitespace-nowrap transition-all duration-150 hover:bg-[#1d4ed8] hover:shadow-[0_12px_32px_rgba(37,99,235,0.34)] active:scale-[0.98] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#60a5fa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#06070b]"
-                >
-                  <span>Paso 1: Crear mi personaje</span>
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={onOpenRumors}
-                  className="group inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center gap-2 rounded-full px-5 py-3 text-sm sm:text-base font-medium text-[#9ca3af] whitespace-nowrap transition-colors duration-150 hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#60a5fa]"
-                >
-                  <span>Luego, Paso 2: Buzón Lady Nebula</span>
-                  <ArrowRight
-                    className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-1"
-                    aria-hidden="true"
-                  />
-                </button>
-              </>
-            ) : stage === 'step1-only' ? (
-              <>
-                <button
-                  type="button"
-                  onClick={onOpenRumors}
-                  className="inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#6d28d9] via-[#7c3aed] to-[#2563eb] px-8 py-3.5 text-sm sm:text-base font-medium text-white whitespace-nowrap transition-all duration-150 hover:opacity-95 hover:shadow-[0_12px_32px_rgba(124,58,237,0.36)] active:scale-[0.98] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa]"
-                >
-                  <span>Paso 2: Entrar al Buzón Lady Nebula</span>
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={onStartCharacter}
-                  className="inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center rounded-full px-5 py-3 text-sm sm:text-base font-medium text-[#93c5fd] whitespace-nowrap transition-colors duration-150 hover:text-white cursor-pointer"
-                >
-                  Paso 1 listo ({guestProgress.guestName})
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={onOpenRumors}
-                  className="inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#6d28d9] via-[#7c3aed] to-[#2563eb] px-8 py-3.5 text-sm sm:text-base font-medium text-white whitespace-nowrap transition-all duration-150 hover:opacity-95 hover:shadow-[0_12px_32px_rgba(124,58,237,0.36)] active:scale-[0.98] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa]"
-                >
-                  <span>Enviar otro rumor a Lady Nebula</span>
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={onStartCharacter}
-                  className="inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center rounded-full px-5 py-3 text-sm sm:text-base font-medium text-[#34d399] whitespace-nowrap transition-colors duration-150 hover:text-white cursor-pointer"
-                >
-                  Misión previa lista ({guestProgress.guestName})
-                </button>
-              </>
-            )}
-          </div>
 
           {/* Unmistakable Persistent 2-Step Order Roadmap */}
           <MissionStepsBar
