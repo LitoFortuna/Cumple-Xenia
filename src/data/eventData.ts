@@ -37,8 +37,8 @@ export const GUESTS = [
   'Mike',
   'Míriam',
   'Romera',
-  'Sara',
   'Sara G',
+  'Sara L',
   'Viri',
 ] as const;
 
