@@ -3,10 +3,16 @@ import { ArrowRight, Check, Copy } from 'lucide-react';
 import { EVENT_CONFIG } from '../data/eventData';
 
 interface BriefingBentoProps {
+  completedGuestName: string;
+  onStartCharacter: () => void;
   onOpenRumors: () => void;
 }
 
-export function BriefingBento({ onOpenRumors }: BriefingBentoProps) {
+export function BriefingBento({
+  completedGuestName,
+  onStartCharacter,
+  onOpenRumors,
+}: BriefingBentoProps) {
   const [copiedCoords, setCopiedCoords] = useState(false);
 
   const handleCopyCoordinates = async () => {
@@ -110,35 +116,58 @@ export function BriefingBento({ onOpenRumors }: BriefingBentoProps) {
           </div>
         </article>
 
-        {/* Card 4: Pre-juego Lady Nebula */}
+        {/* Card 4: Pre-juego Lady Nebula (Paso 2) */}
         <article className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0e1017] p-6 sm:p-8 lg:p-10 sm:col-span-2 lg:col-span-7 flex flex-col justify-between min-h-[220px] transition-colors duration-200 hover:border-white/[0.15]">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#5b21b6]/15 via-transparent to-[#2563eb]/15"
           />
           <p className="relative z-10 text-xs font-medium tracking-wide text-[#c4b5fd]">
-            Pre-juego activo
+            Paso 2 · Después de crear tu personaje
           </p>
           <div className="relative z-10 mt-5 space-y-3">
             <h3 className="font-display text-2xl sm:text-3xl font-semibold tracking-[-0.025em] text-[#f9fafb]">
-              El juego empieza antes de embarcar.
+              Primero crea tu ficha; luego incendia la gala.
             </h3>
             <p className="max-w-xl text-sm sm:text-base leading-relaxed text-[#9ca3af]">
-              Filtra manías, sobornos o rumores anónimos sobre el resto de invitados en el Buzón de
-              Lady Nebula para incendiar la gala.
+              En cuanto registres tu personaje (Paso 1), entra al Buzón de Lady Nebula (Paso 2)
+              para filtrar manías, sobornos o rumores anónimos sobre el resto de invitados.
             </p>
-            <div className="pt-1">
-              <button
-                type="button"
-                onClick={onOpenRumors}
-                className="group inline-flex min-h-[40px] items-center gap-2 text-sm font-medium text-[#93c5fd] transition-colors hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3b82f6] rounded-sm"
-              >
-                <span>Ir al Buzón confidencial</span>
-                <ArrowRight
-                  className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-1"
-                  aria-hidden="true"
-                />
-              </button>
+            <div className="flex flex-wrap items-center gap-4 pt-1">
+              {!completedGuestName ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={onStartCharacter}
+                    className="group inline-flex min-h-[40px] items-center gap-2 text-sm font-medium text-[#93c5fd] transition-colors hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3b82f6] rounded-sm"
+                  >
+                    <span>Empezar por Paso 1: Crear personaje</span>
+                    <ArrowRight
+                      className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-1"
+                      aria-hidden="true"
+                    />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onOpenRumors}
+                    className="inline-flex min-h-[40px] items-center gap-1.5 text-sm font-medium text-[#9ca3af] transition-colors hover:text-[#c4b5fd] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b5cf6] rounded-sm"
+                  >
+                    <span>Ir al Paso 2: Buzón</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onOpenRumors}
+                  className="group inline-flex min-h-[40px] items-center gap-2 text-sm font-medium text-[#c4b5fd] transition-colors hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b5cf6] rounded-sm"
+                >
+                  <span>Continuar al Paso 2: Buzón de Lady Nebula</span>
+                  <ArrowRight
+                    className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-1"
+                    aria-hidden="true"
+                  />
+                </button>
+              )}
             </div>
           </div>
         </article>

@@ -214,14 +214,16 @@ export async function ensureOrbitaTabs(
 }
 
 /**
- * Appends a single row to the specified tab in the connected Google Sheet.
+ * Appends one or more rows to the specified tab in the connected Google Sheet.
  */
-export async function appendRowToSheet(
+export async function appendRowsToSheet(
   accessToken: string,
   spreadsheetId: string,
   sheetTitle: string,
-  row: string[]
+  rows: string[][]
 ): Promise<void> {
+  if (rows.length === 0) return;
+
   const range = encodeURIComponent(quoteSheetRange(sheetTitle, 'A:F'));
   const url = `${SHEETS_API_BASE}/${encodeURIComponent(
     spreadsheetId
@@ -230,9 +232,21 @@ export async function appendRowToSheet(
   await sheetsFetch(url, accessToken, {
     method: 'POST',
     body: JSON.stringify({
-      values: [row],
+      values: rows,
     }),
   });
+}
+
+/**
+ * Appends a single row to the specified tab in the connected Google Sheet.
+ */
+export async function appendRowToSheet(
+  accessToken: string,
+  spreadsheetId: string,
+  sheetTitle: string,
+  row: string[]
+): Promise<void> {
+  await appendRowsToSheet(accessToken, spreadsheetId, sheetTitle, [row]);
 }
 
 /**

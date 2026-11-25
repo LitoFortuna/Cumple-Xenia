@@ -1,0 +1,191 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Pillar 0: Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Reusable Hardened Primitives ---
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    // Cost-optimized O(1) organizer check (no get/exists, safe for list queries)
+    function isPrimaryOrganizer() {
+      return isVerifiedUser() && request.auth.token.email == 'raulfdz3@gmail.com';
+    }
+
+    // Full organizer check for single-document operations
+    function isAdmin() {
+      return isPrimaryOrganizer() ||
+        (isVerifiedUser() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+    }
+
+    function isValidEmail(val) {
+      return val is string &&
+        val.size() >= 5 &&
+        val.size() <= 160 &&
+        val.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$');
+    }
+
+    // --- Validation Blueprints (Synchronized verbatim with firebase-blueprint.json) ---
+    function isValidCharacterSubmissionCore(data) {
+      return data.nombre is string && data.nombre.size() >= 1 && data.nombre.size() <= 80 &&
+        isValidEmail(data.email) &&
+        data.perfil is string && data.perfil.size() >= 2 && data.perfil.size() <= 80 &&
+        data.mania is string && data.mania.size() >= 3 && data.mania.size() <= 400 &&
+        data.lema is string && data.lema.size() >= 2 && data.lema.size() <= 300 &&
+        data.syncedToSheets is bool &&
+        data.createdAt is timestamp;
+    }
+
+    function isValidCharacterSubmissionCreate(data) {
+      return data.keys().hasAll(['nombre', 'email', 'perfil', 'mania', 'lema', 'syncedToSheets', 'createdAt']) &&
+        data.keys().hasOnly(['nombre', 'email', 'perfil', 'mania', 'lema', 'syncedToSheets', 'createdAt']) &&
+        isValidCharacterSubmissionCore(data) &&
+        data.syncedToSheets == false &&
+        data.createdAt == request.time;
+    }
+
+    function isValidCharacterSubmissionUpdate(data) {
+      return data.keys().hasAll(['nombre', 'email', 'perfil', 'mania', 'lema', 'syncedToSheets', 'createdAt']) &&
+        data.keys().hasOnly(['nombre', 'email', 'perfil', 'mania', 'lema', 'syncedToSheets', 'createdAt', 'syncedAt']) &&
+        isValidCharacterSubmissionCore(data) &&
+        (!('syncedAt' in data) || data.syncedAt is timestamp);
+    }
+
+    function isValidRumorSubmissionCore(data) {
+      return data.objetivo is string && data.objetivo.size() >= 1 && data.objetivo.size() <= 80 &&
+        data.autor is string && data.autor.size() >= 1 && data.autor.size() <= 80 &&
+        data.anonymous is bool &&
+        data.mania is string && data.mania.size() >= 5 && data.mania.size() <= 800 &&
+        data.soborno is string && data.soborno.size() <= 400 &&
+        data.chisme is string && data.chisme.size() <= 800 &&
+        data.syncedToSheets is bool &&
+        data.createdAt is timestamp;
+    }
+
+    function isValidRumorSubmissionCreate(data) {
+      return data.keys().hasAll(['objetivo', 'autor', 'anonymous', 'mania', 'soborno', 'chisme', 'syncedToSheets', 'createdAt']) &&
+        data.keys().hasOnly(['objetivo', 'autor', 'anonymous', 'mania', 'soborno', 'chisme', 'syncedToSheets', 'createdAt']) &&
+        isValidRumorSubmissionCore(data) &&
+        data.syncedToSheets == false &&
+        data.createdAt == request.time;
+    }
+
+    function isValidRumorSubmissionUpdate(data) {
+      return data.keys().hasAll(['objetivo', 'autor', 'anonymous', 'mania', 'soborno', 'chisme', 'syncedToSheets', 'createdAt']) &&
+        data.keys().hasOnly(['objetivo', 'autor', 'anonymous', 'mania', 'soborno', 'chisme', 'syncedToSheets', 'createdAt', 'syncedAt']) &&
+        isValidRumorSubmissionCore(data) &&
+        (!('syncedAt' in data) || data.syncedAt is timestamp);
+    }
+
+    function isValidOrganizerSheetConfig(data) {
+      return data.keys().hasAll(['spreadsheetId', 'title', 'updatedBy', 'updatedAt']) &&
+        data.keys().hasOnly(['spreadsheetId', 'title', 'updatedBy', 'updatedAt']) &&
+        data.spreadsheetId is string &&
+        data.spreadsheetId.size() >= 15 &&
+        data.spreadsheetId.size() <= 120 &&
+        data.spreadsheetId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+        isValidEmail(data.updatedBy) &&
+        data.updatedAt is timestamp &&
+        data.updatedAt == request.time;
+    }
+
+    function isValidAdminRecord(data) {
+      return data.keys().hasAll(['email', 'createdAt']) &&
+        data.keys().hasOnly(['email', 'createdAt']) &&
+        isValidEmail(data.email) &&
+        data.createdAt is timestamp;
+    }
+
+    // --- Collection 1: Character Submissions (Write-only dropbox for guests; organizer-only read/sync/delete) ---
+    match /characterSubmissions/{submissionId} {
+      allow get: if isVerifiedUser() && isValidId(submissionId) && isAdmin();
+      allow list: if isPrimaryOrganizer();
+      allow create: if isValidId(submissionId) && isValidCharacterSubmissionCreate(incoming());
+      allow update: if isVerifiedUser() &&
+        isValidId(submissionId) &&
+        isValidCharacterSubmissionUpdate(incoming()) &&
+        isAdmin() &&
+        incoming().createdAt == existing().createdAt &&
+        (
+          (
+            incoming().diff(existing()).affectedKeys().hasOnly(['syncedToSheets', 'syncedAt']) &&
+            incoming().syncedToSheets == true &&
+            incoming().syncedAt == request.time
+          ) ||
+          (
+            incoming().diff(existing()).affectedKeys().hasOnly(['syncedToSheets']) &&
+            incoming().syncedToSheets == false
+          )
+        );
+      allow delete: if isVerifiedUser() && isValidId(submissionId) && isAdmin();
+    }
+
+    // --- Collection 2: Rumor Submissions (Write-only dropbox for guests; organizer-only read/sync/delete) ---
+    match /rumorSubmissions/{submissionId} {
+      allow get: if isVerifiedUser() && isValidId(submissionId) && isAdmin();
+      allow list: if isPrimaryOrganizer();
+      allow create: if isValidId(submissionId) && isValidRumorSubmissionCreate(incoming());
+      allow update: if isVerifiedUser() &&
+        isValidId(submissionId) &&
+        isValidRumorSubmissionUpdate(incoming()) &&
+        isAdmin() &&
+        incoming().createdAt == existing().createdAt &&
+        (
+          (
+            incoming().diff(existing()).affectedKeys().hasOnly(['syncedToSheets', 'syncedAt']) &&
+            incoming().syncedToSheets == true &&
+            incoming().syncedAt == request.time
+          ) ||
+          (
+            incoming().diff(existing()).affectedKeys().hasOnly(['syncedToSheets']) &&
+            incoming().syncedToSheets == false
+          )
+        );
+      allow delete: if isVerifiedUser() && isValidId(submissionId) && isAdmin();
+    }
+
+    // --- Collection 3: Organizer Private Google Sheet Configuration ---
+    match /organizerConfig/{configId} {
+      allow get: if isVerifiedUser() && isValidId(configId) && isAdmin();
+      allow list: if isPrimaryOrganizer();
+      allow create: if isVerifiedUser() && isValidId(configId) && isValidOrganizerSheetConfig(incoming()) && isAdmin() && incoming().updatedBy == request.auth.token.email;
+      allow update: if isVerifiedUser() &&
+        isValidId(configId) &&
+        isValidOrganizerSheetConfig(incoming()) &&
+        isAdmin() &&
+        incoming().updatedBy == request.auth.token.email &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['spreadsheetId', 'title', 'updatedBy', 'updatedAt']);
+      allow delete: if isVerifiedUser() && isValidId(configId) && isAdmin();
+    }
+
+    // --- Collection 4: Authorized Organizers ---
+    match /admins/{adminUid} {
+      allow get: if isPrimaryOrganizer() && isValidId(adminUid);
+      allow list: if isPrimaryOrganizer();
+      allow create: if isPrimaryOrganizer() && isValidId(adminUid) && isValidAdminRecord(incoming()) && incoming().createdAt == request.time;
+      allow update: if false;
+      allow delete: if isPrimaryOrganizer() && isValidId(adminUid);
+    }
+  }
+}

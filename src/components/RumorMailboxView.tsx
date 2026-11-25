@@ -1,26 +1,25 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { AlertCircle, ArrowLeft, Check, ExternalLink, EyeOff } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Check, EyeOff, Loader2 } from 'lucide-react';
 import { RUMOR_TARGETS } from '../data/eventData';
-import type { GoogleSheetsController } from '../hooks/useGoogleSheets';
 import {
+  FIELD_LIMITS,
   hasErrors,
   validateRumorForm,
   type RumorFormValues,
   type ValidationErrors,
 } from '../utils/orbitaLogic';
-import { buildSpreadsheetUrl } from '../utils/sheetsLogic';
-import { SheetsConnectionPanel } from './SheetsConnectionPanel';
+import { submitRumorToVault } from '../utils/submissionsStore';
 
 interface RumorMailboxViewProps {
-  sheets: GoogleSheetsController;
   initialAuthor: string;
   onBackToInvitation: () => void;
+  onGoToCreateCharacter: () => void;
 }
 
 export function RumorMailboxView({
-  sheets,
   initialAuthor,
   onBackToInvitation,
+  onGoToCreateCharacter,
 }: RumorMailboxViewProps) {
   const [values, setValues] = useState<RumorFormValues>({
     objetivo: '',
@@ -31,6 +30,8 @@ export function RumorMailboxView({
     chisme: '',
   });
   const [fieldErrors, setFieldErrors] = useState<ValidationErrors<RumorFormValues>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [lastSubmittedTarget, setLastSubmittedTarget] = useState<string | null>(null);
   const [submittedTargets, setSubmittedTargets] = useState<string[]>([]);
 
@@ -56,8 +57,8 @@ export function RumorMailboxView({
         return copy;
       });
     }
-    if (sheets.error) {
-      sheets.clearError();
+    if (submitError) {
+      setSubmitError(null);
     }
   };
 
@@ -68,7 +69,7 @@ export function RumorMailboxView({
     }));
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const validation = validateRumorForm(values);
@@ -78,15 +79,25 @@ export function RumorMailboxView({
     }
 
     const target = values.objetivo.trim();
-    sheets.requestSaveRumor(values, () => {
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      await submitRumorToVault(values);
       setLastSubmittedTarget(target);
       setSubmittedTargets((prev) => (prev.includes(target) ? prev : [...prev, target]));
-    });
+    } catch {
+      setSubmitError(
+        'No hemos podido archivar tu soplo en este momento. Comprueba tu conexión e inténtalo de nuevo.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleResetForAnother = () => {
     setLastSubmittedTarget(null);
     setFieldErrors({});
+    setSubmitError(null);
     setValues((prev) => ({
       ...prev,
       objetivo: '',
@@ -124,187 +135,237 @@ export function RumorMailboxView({
 
           {submittedTargets.length > 0 && (
             <p className="text-xs sm:text-sm text-[#c4b5fd] tabular-nums">
-              Soplos guardados en esta sesión: {submittedTargets.length}
+              Soplos enviados en esta sesión: {submittedTargets.length}
             </p>
           )}
         </div>
 
         <div className="mx-auto max-w-2xl text-center space-y-3.5">
-          <p className="text-sm font-medium text-[#c4b5fd]">Archivo confidencial · Pre-juego</p>
+          <p className="text-sm font-semibold text-[#c4b5fd]">
+            Paso 2 de 2 · Después de crear tu personaje
+          </p>
           <h1 className="font-display text-[clamp(2.1rem,5.5vw,3.75rem)] font-semibold leading-[1.06] tracking-[-0.035em] text-[#f9fafb]">
             Buzón de <span className="text-gradient-orbital">Lady Nebula.</span>
           </h1>
           <p className="text-base sm:text-lg leading-relaxed text-[#9ca3af]">
             Cuéntanos trapos sucios, manías inconfesables o invéntate rumores escandalosos sobre{' '}
-            <span className="text-[#f3f4f6]">el resto de invitados</span>. Todo se archivará
-            directamente en Google Sheets sin correos automáticos.
+            <span className="text-[#f3f4f6]">el resto de invitados</span>. Todo se archiva de forma
+            estrictamente confidencial para la organización.
           </p>
         </div>
 
+        {/* Clear Step 1 prerequisite reminder if character not yet created in this session */}
+        {!initialAuthor.trim() ? (
+          <div
+            role="region"
+            aria-label="Aviso de Paso 1 pendiente"
+            className="rounded-3xl border border-[#3b82f6]/40 bg-[#2563eb]/12 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+          >
+            <div className="space-y-1">
+              <p className="text-xs font-semibold text-[#93c5fd]">
+                ¿Todavía no has completado el Paso 1?
+              </p>
+              <p className="text-sm text-[#e5e7eb] leading-relaxed">
+                Primero debes <strong className="text-white">crear tu personaje</strong> para que
+                podamos preparar tu ficha. Si ya lo hiciste antes, puedes enviar tus rumores abajo.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onGoToCreateCharacter}
+              className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-full bg-[#2563eb] px-5 py-2.5 text-xs sm:text-sm font-medium text-white whitespace-nowrap transition-colors hover:bg-[#1d4ed8] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#60a5fa]"
+            >
+              Ir al Paso 1: Crear personaje
+            </button>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-[#34d399]/30 bg-[#34d399]/10 px-5 py-3.5 text-center text-xs sm:text-sm text-[#d1fae5]">
+            Paso 1 completado ({initialAuthor}) · Ahora estás en el{' '}
+            <strong className="text-white">Paso 2: Buzón de Lady Nebula</strong>.
+          </div>
+        )}
+
         <div className="rounded-3xl border border-white/[0.08] bg-[#0e1017] p-6 sm:p-10 lg:p-12">
           {!lastSubmittedTarget ? (
-            <>
-              <SheetsConnectionPanel sheets={sheets} accent="violet" />
-
-              <form onSubmit={handleSubmit} noValidate className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div>
-                    <label
-                      htmlFor="rumor-objetivo"
-                      className="mb-2 block text-xs sm:text-sm font-medium text-[#d1d5db]"
-                    >
-                      ¿Sobre qué invitado/a vas a escribir?{' '}
-                      <span className="text-[#c4b5fd]">*</span>
-                    </label>
-                    <select
-                      id="rumor-objetivo"
-                      name="Invitado_Objetivo"
-                      value={values.objetivo}
-                      onChange={(e) => updateField('objetivo', e.target.value)}
-                      aria-invalid={Boolean(fieldErrors.objetivo)}
-                      aria-describedby={fieldErrors.objetivo ? 'rumor-objetivo-error' : undefined}
-                      className={`${inputBaseClass} ${inputStateClass(Boolean(fieldErrors.objetivo))}`}
-                    >
-                      <option value="" disabled>
-                        Elige a tu víctima galáctica…
-                      </option>
-                      {RUMOR_TARGETS.map((target) => (
-                        <option key={target} value={target}>
-                          {target}
-                        </option>
-                      ))}
-                    </select>
-                    {fieldErrors.objetivo && (
-                      <p id="rumor-objetivo-error" className="mt-1.5 text-xs text-rose-300">
-                        {fieldErrors.objetivo}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <div className="mb-2 flex items-center justify-between gap-2">
-                      <label
-                        htmlFor="rumor-autor"
-                        className="text-xs sm:text-sm font-medium text-[#d1d5db]"
-                      >
-                        Tu nombre (opcional)
-                      </label>
-                      <button
-                        type="button"
-                        role="switch"
-                        aria-checked={values.anonymous}
-                        onClick={handleToggleAnonymous}
-                        className={`inline-flex items-center gap-1.5 text-xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b5cf6] rounded-sm ${
-                          values.anonymous ? 'text-[#c4b5fd]' : 'text-[#9ca3af] hover:text-white'
-                        }`}
-                      >
-                        <EyeOff className="h-3.5 w-3.5" aria-hidden="true" />
-                        <span>{values.anonymous ? 'Anónimo activado' : 'Modo anónimo'}</span>
-                      </button>
-                    </div>
-                    <input
-                      type="text"
-                      id="rumor-autor"
-                      name="Informante_Secreto"
-                      disabled={values.anonymous}
-                      value={values.anonymous ? '' : values.autor}
-                      onChange={(e) => updateField('autor', e.target.value)}
-                      placeholder={
-                        values.anonymous
-                          ? 'Se guardará como Anónimo'
-                          : 'Déjalo vacío para modo anónimo'
-                      }
-                      className={`${inputBaseClass} ${inputStateClass(false)} disabled:opacity-55 disabled:cursor-not-allowed`}
-                    />
-                  </div>
-                </div>
-
+            <form onSubmit={(e) => void handleSubmit(e)} noValidate className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <label
-                    htmlFor="rumor-mania"
+                    htmlFor="rumor-objetivo"
                     className="mb-2 block text-xs sm:text-sm font-medium text-[#d1d5db]"
                   >
-                    1. Manía, frase típica o &quot;delito cotidiano&quot; que debemos exagerar{' '}
+                    ¿Sobre qué invitado/a vas a escribir?{' '}
                     <span className="text-[#c4b5fd]">*</span>
                   </label>
-                  <textarea
-                    id="rumor-mania"
-                    name="Mania_o_Anécdota"
-                    rows={3}
-                    value={values.mania}
-                    onChange={(e) => updateField('mania', e.target.value)}
-                    placeholder="Ej. Siempre discute con los árbitros, se escaquea para irse a casa a las 22h, intenta entrenarte aunque solo le pidas la hora…"
-                    aria-invalid={Boolean(fieldErrors.mania)}
-                    aria-describedby={fieldErrors.mania ? 'rumor-mania-error' : undefined}
-                    className={`${inputBaseClass} ${inputStateClass(Boolean(fieldErrors.mania))} resize-y min-h-[110px]`}
-                  />
-                  {fieldErrors.mania && (
-                    <p id="rumor-mania-error" className="mt-1.5 text-xs text-rose-300">
-                      {fieldErrors.mania}
+                  <select
+                    id="rumor-objetivo"
+                    name="Invitado_Objetivo"
+                    value={values.objetivo}
+                    onChange={(e) => updateField('objetivo', e.target.value)}
+                    aria-invalid={Boolean(fieldErrors.objetivo)}
+                    aria-describedby={fieldErrors.objetivo ? 'rumor-objetivo-error' : undefined}
+                    className={`${inputBaseClass} ${inputStateClass(Boolean(fieldErrors.objetivo))}`}
+                  >
+                    <option value="" disabled>
+                      Elige a tu víctima galáctica…
+                    </option>
+                    {RUMOR_TARGETS.map((target) => (
+                      <option key={target} value={target}>
+                        {target}
+                      </option>
+                    ))}
+                  </select>
+                  {fieldErrors.objetivo && (
+                    <p id="rumor-objetivo-error" className="mt-1.5 text-xs text-rose-300">
+                      {fieldErrors.objetivo}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="rumor-soborno"
-                    className="mb-2 block text-xs sm:text-sm font-medium text-[#d1d5db]"
-                  >
-                    2. ¿Con qué se le puede sobornar o sacar de quicio en 10 segundos?
-                  </label>
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <label
+                      htmlFor="rumor-autor"
+                      className="text-xs sm:text-sm font-medium text-[#d1d5db]"
+                    >
+                      Tu nombre (opcional)
+                    </label>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={values.anonymous}
+                      onClick={handleToggleAnonymous}
+                      className={`inline-flex items-center gap-1.5 text-xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b5cf6] rounded-sm ${
+                        values.anonymous ? 'text-[#c4b5fd]' : 'text-[#9ca3af] hover:text-white'
+                      }`}
+                    >
+                      <EyeOff className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span>{values.anonymous ? 'Anónimo activado' : 'Modo anónimo'}</span>
+                    </button>
+                  </div>
                   <input
                     type="text"
-                    id="rumor-soborno"
-                    name="Talon_de_Aquiles_o_Soborno"
-                    value={values.soborno}
-                    onChange={(e) => updateField('soborno', e.target.value)}
-                    placeholder="Ej. Con un buen dulce, criticando su película favorita, quitándole el sitio…"
-                    className={`${inputBaseClass} ${inputStateClass(false)}`}
+                    id="rumor-autor"
+                    name="Informante_Secreto"
+                    disabled={values.anonymous}
+                    maxLength={FIELD_LIMITS.rumor.autorMax}
+                    value={values.anonymous ? '' : values.autor}
+                    onChange={(e) => updateField('autor', e.target.value)}
+                    placeholder={
+                      values.anonymous
+                        ? 'Se guardará como Anónimo'
+                        : 'Déjalo vacío para modo anónimo'
+                    }
+                    className={`${inputBaseClass} ${inputStateClass(Boolean(fieldErrors.autor))} disabled:opacity-55 disabled:cursor-not-allowed`}
                   />
+                  {fieldErrors.autor && (
+                    <p className="mt-1.5 text-xs text-rose-300">{fieldErrors.autor}</p>
+                  )}
                 </div>
+              </div>
 
-                <div>
-                  <label
-                    htmlFor="rumor-chisme"
-                    className="mb-2 block text-xs sm:text-sm font-medium text-[#d1d5db]"
-                  >
-                    3. Rumor loco (falso o sospechosamente real) para la crónica de la gala
-                  </label>
-                  <textarea
-                    id="rumor-chisme"
-                    name="Rumor_para_Lady_Nebula"
-                    rows={2}
-                    value={values.chisme}
-                    onChange={(e) => updateField('chisme', e.target.value)}
-                    placeholder="Ej. 'Dicen que escondió un alijo ilegal en los motores de la nave' o alguna broma interna del grupo…"
-                    className={`${inputBaseClass} ${inputStateClass(false)} resize-y min-h-[88px]`}
-                  />
-                </div>
-
-                {sheets.error && (
-                  <div
-                    role="alert"
-                    className="flex items-start gap-2.5 rounded-2xl border border-rose-500/35 bg-rose-950/40 p-4 text-xs sm:text-sm text-rose-200"
-                  >
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-400" aria-hidden="true" />
-                    <span>{sheets.error}</span>
-                  </div>
-                )}
-
-                <div className="pt-2 space-y-3">
-                  <button
-                    type="submit"
-                    disabled={sheets.isBusy}
-                    className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#6d28d9] via-[#7c3aed] to-[#2563eb] px-6 py-3.5 text-sm sm:text-base font-medium text-white transition-all duration-150 hover:opacity-95 hover:shadow-[0_12px_32px_rgba(124,58,237,0.34)] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1017]"
-                  >
-                    <span>Guardar soplo en Google Sheets</span>
-                  </button>
-                  <p className="text-center text-xs text-[#6b7280]">
-                    Puedes guardar tantos informes anónimos como quieras, uno por invitado.
+              <div>
+                <label
+                  htmlFor="rumor-mania"
+                  className="mb-2 block text-xs sm:text-sm font-medium text-[#d1d5db]"
+                >
+                  1. Manía, frase típica o &quot;delito cotidiano&quot; que debemos exagerar{' '}
+                  <span className="text-[#c4b5fd]">*</span>
+                </label>
+                <textarea
+                  id="rumor-mania"
+                  name="Mania_o_Anécdota"
+                  rows={3}
+                  maxLength={FIELD_LIMITS.rumor.maniaMax}
+                  value={values.mania}
+                  onChange={(e) => updateField('mania', e.target.value)}
+                  placeholder="Ej. Siempre discute con los árbitros, se escaquea para irse a casa a las 22h, intenta entrenarte aunque solo le pidas la hora…"
+                  aria-invalid={Boolean(fieldErrors.mania)}
+                  aria-describedby={fieldErrors.mania ? 'rumor-mania-error' : undefined}
+                  className={`${inputBaseClass} ${inputStateClass(Boolean(fieldErrors.mania))} resize-y min-h-[110px]`}
+                />
+                {fieldErrors.mania && (
+                  <p id="rumor-mania-error" className="mt-1.5 text-xs text-rose-300">
+                    {fieldErrors.mania}
                   </p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="rumor-soborno"
+                  className="mb-2 block text-xs sm:text-sm font-medium text-[#d1d5db]"
+                >
+                  2. ¿Con qué se le puede sobornar o sacar de quicio en 10 segundos?
+                </label>
+                <input
+                  type="text"
+                  id="rumor-soborno"
+                  name="Talon_de_Aquiles_o_Soborno"
+                  maxLength={FIELD_LIMITS.rumor.sobornoMax}
+                  value={values.soborno}
+                  onChange={(e) => updateField('soborno', e.target.value)}
+                  placeholder="Ej. Con un buen dulce, criticando su película favorita, quitándole el sitio…"
+                  className={`${inputBaseClass} ${inputStateClass(Boolean(fieldErrors.soborno))}`}
+                />
+                {fieldErrors.soborno && (
+                  <p className="mt-1.5 text-xs text-rose-300">{fieldErrors.soborno}</p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="rumor-chisme"
+                  className="mb-2 block text-xs sm:text-sm font-medium text-[#d1d5db]"
+                >
+                  3. Rumor loco (falso o sospechosamente real) para la crónica de la gala
+                </label>
+                <textarea
+                  id="rumor-chisme"
+                  name="Rumor_para_Lady_Nebula"
+                  rows={2}
+                  maxLength={FIELD_LIMITS.rumor.chismeMax}
+                  value={values.chisme}
+                  onChange={(e) => updateField('chisme', e.target.value)}
+                  placeholder="Ej. 'Dicen que escondió un alijo ilegal en los motores de la nave' o alguna broma interna del grupo…"
+                  className={`${inputBaseClass} ${inputStateClass(Boolean(fieldErrors.chisme))} resize-y min-h-[88px]`}
+                />
+                {fieldErrors.chisme && (
+                  <p className="mt-1.5 text-xs text-rose-300">{fieldErrors.chisme}</p>
+                )}
+              </div>
+
+              {submitError && (
+                <div
+                  role="alert"
+                  className="flex items-start gap-2.5 rounded-2xl border border-rose-500/35 bg-rose-950/40 p-4 text-xs sm:text-sm text-rose-200"
+                >
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-400" aria-hidden="true" />
+                  <span>{submitError}</span>
                 </div>
-              </form>
-            </>
+              )}
+
+              <div className="pt-2 space-y-3">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#6d28d9] via-[#7c3aed] to-[#2563eb] px-6 py-3.5 text-sm sm:text-base font-medium text-white transition-all duration-150 hover:opacity-95 hover:shadow-[0_12px_32px_rgba(124,58,237,0.34)] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1017]"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                      <span>Archivando soplo confidencial…</span>
+                    </>
+                  ) : (
+                    <span>Enviar soplo confidencial</span>
+                  )}
+                </button>
+                <p className="text-center text-xs text-[#6b7280]">
+                  Puedes enviar tantos informes anónimos como quieras, uno por invitado. Nadie más
+                  podrá leerlos.
+                </p>
+              </div>
+            </form>
           ) : (
             <div className="mx-auto max-w-lg py-6 text-center space-y-6 animate-fade-up">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-tr from-[#6d28d9] to-[#3b82f6] shadow-[0_0_32px_rgba(124,58,237,0.4)]">
@@ -313,28 +374,17 @@ export function RumorMailboxView({
 
               <div className="space-y-2">
                 <p className="text-xs font-medium tracking-wide text-[#c4b5fd]">
-                  Archivado en Google Sheets
+                  Archivado en el buzón privado de Lady Nebula
                 </p>
                 <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-[#f9fafb]">
                   Nota guardada sobre{' '}
                   <span className="text-gradient-cobalt">{lastSubmittedTarget}</span>.
                 </h2>
                 <p className="text-sm sm:text-base text-[#9ca3af] leading-relaxed">
-                  Cuantos más invitados retrates, más impredecible y divertida será la gala.
+                  Cuantos más invitados retrates, más impredecible y divertida será la gala. Solo la
+                  organización tiene acceso a estos soplos.
                 </p>
               </div>
-
-              {sheets.spreadsheet && (
-                <a
-                  href={buildSpreadsheetUrl(sheets.spreadsheet.spreadsheetId)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-[#c4b5fd] transition-colors hover:text-white"
-                >
-                  <span>Abrir hoja en Google Sheets</span>
-                  <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-                </a>
-              )}
 
               {submittedTargets.length > 0 && (
                 <p className="text-xs text-[#9ca3af]">

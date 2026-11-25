@@ -2,13 +2,19 @@ import { useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { EVENT_CONFIG } from '../data/eventData';
 import { computeCountdown, padTwo } from '../utils/orbitaLogic';
+import { MissionStepsBar } from './MissionStepsBar';
 
 interface HeroSectionProps {
+  completedGuestName: string;
   onStartCharacter: () => void;
   onOpenRumors: () => void;
 }
 
-export function HeroSection({ onStartCharacter, onOpenRumors }: HeroSectionProps) {
+export function HeroSection({
+  completedGuestName,
+  onStartCharacter,
+  onOpenRumors,
+}: HeroSectionProps) {
   const [countdown, setCountdown] = useState(() =>
     computeCountdown(EVENT_CONFIG.eventDateISO)
   );
@@ -20,8 +26,10 @@ export function HeroSection({ onStartCharacter, onOpenRumors }: HeroSectionProps
     return () => window.clearInterval(timer);
   }, []);
 
+  const step1Done = Boolean(completedGuestName.trim());
+
   return (
-    <section id="top" className="relative overflow-hidden pt-14 sm:pt-20 lg:pt-24">
+    <section id="top" className="relative overflow-hidden pt-12 sm:pt-18 lg:pt-22">
       {/* Controlled ambient atmospheric glow */}
       <div
         aria-hidden="true"
@@ -51,28 +59,59 @@ export function HeroSection({ onStartCharacter, onOpenRumors }: HeroSectionProps
             </span>
           </p>
 
-          {/* Primary + secondary action pair */}
+          {/* Primary + secondary action pair reflecting explicit 1 -> 2 order */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 pt-2">
-            <button
-              type="button"
-              onClick={onStartCharacter}
-              className="inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center rounded-full bg-[#2563eb] px-8 py-3.5 text-sm sm:text-base font-medium text-white whitespace-nowrap transition-all duration-150 hover:bg-[#1d4ed8] hover:shadow-[0_12px_32px_rgba(37,99,235,0.34)] active:scale-[0.98] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#60a5fa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#06070b]"
-            >
-              Crear mi personaje
-            </button>
+            {!step1Done ? (
+              <>
+                <button
+                  type="button"
+                  onClick={onStartCharacter}
+                  className="inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-[#2563eb] px-8 py-3.5 text-sm sm:text-base font-medium text-white whitespace-nowrap transition-all duration-150 hover:bg-[#1d4ed8] hover:shadow-[0_12px_32px_rgba(37,99,235,0.34)] active:scale-[0.98] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#60a5fa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#06070b]"
+                >
+                  <span>Paso 1: Crear mi personaje</span>
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </button>
 
-            <button
-              type="button"
-              onClick={onOpenRumors}
-              className="group inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center gap-2 rounded-full px-5 py-3 text-sm sm:text-base font-medium text-[#93c5fd] whitespace-nowrap transition-colors duration-150 hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#60a5fa]"
-            >
-              <span>Entrar al Buzón Lady Nebula</span>
-              <ArrowRight
-                className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-1"
-                aria-hidden="true"
-              />
-            </button>
+                <button
+                  type="button"
+                  onClick={onOpenRumors}
+                  className="group inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center gap-2 rounded-full px-5 py-3 text-sm sm:text-base font-medium text-[#9ca3af] whitespace-nowrap transition-colors duration-150 hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#60a5fa]"
+                >
+                  <span>Luego, Paso 2: Buzón Lady Nebula</span>
+                  <ArrowRight
+                    className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-1"
+                    aria-hidden="true"
+                  />
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={onOpenRumors}
+                  className="inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#6d28d9] via-[#7c3aed] to-[#2563eb] px-8 py-3.5 text-sm sm:text-base font-medium text-white whitespace-nowrap transition-all duration-150 hover:opacity-95 hover:shadow-[0_12px_32px_rgba(124,58,237,0.36)] active:scale-[0.98] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa]"
+                >
+                  <span>Paso 2: Entrar al Buzón Lady Nebula</span>
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onStartCharacter}
+                  className="inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center rounded-full px-5 py-3 text-sm sm:text-base font-medium text-[#93c5fd] whitespace-nowrap transition-colors duration-150 hover:text-white cursor-pointer"
+                >
+                  Ver mi registro ({completedGuestName})
+                </button>
+              </>
+            )}
           </div>
+
+          {/* Unmistakable 2-Step Order Roadmap */}
+          <MissionStepsBar
+            completedGuestName={completedGuestName}
+            onGoToStep1={onStartCharacter}
+            onGoToStep2={onOpenRumors}
+          />
 
           {/* Live tabular countdown strip */}
           <div
@@ -108,7 +147,7 @@ export function HeroSection({ onStartCharacter, onOpenRumors }: HeroSectionProps
       </div>
 
       {/* Luminous Planetary Horizon Visual */}
-      <div className="relative mt-10 sm:mt-14 lg:mt-16 h-44 sm:h-64 md:h-80 w-full overflow-hidden">
+      <div className="relative mt-10 sm:mt-14 h-40 sm:h-60 md:h-72 w-full overflow-hidden">
         <div className="orbital-horizon absolute inset-x-[-22%] -bottom-[58%] h-[168%] rounded-[50%]" />
 
         <svg

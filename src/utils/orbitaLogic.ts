@@ -60,30 +60,67 @@ export function padTwo(value: number): string {
   return String(Math.max(0, Math.floor(value))).padStart(2, '0');
 }
 
+export const FIELD_LIMITS = {
+  character: {
+    nombreMax: 80,
+    emailMax: 160,
+    perfilMax: 80,
+    maniaMin: 3,
+    maniaMax: 400,
+    lemaMin: 2,
+    lemaMax: 300,
+  },
+  rumor: {
+    objetivoMax: 80,
+    autorMax: 80,
+    maniaMin: 5,
+    maniaMax: 800,
+    sobornoMax: 400,
+    chismeMax: 800,
+  },
+} as const;
+
+export function isOrganizerEmail(email: string | null | undefined, organizerEmail: string): boolean {
+  if (!email) return false;
+  return email.trim().toLowerCase() === organizerEmail.trim().toLowerCase();
+}
+
 export function validateCharacterForm(values: CharacterFormValues): ValidationErrors<CharacterFormValues> {
   const errors: ValidationErrors<CharacterFormValues> = {};
+  const nombre = values.nombre.trim();
+  const email = values.email.trim();
+  const perfil = values.perfil.trim();
+  const mania = values.mania.trim();
+  const lema = values.lema.trim();
 
-  if (!values.nombre.trim()) {
+  if (!nombre) {
     errors.nombre = 'Selecciona tu nombre en la lista de pasajeros.';
+  } else if (nombre.length > FIELD_LIMITS.character.nombreMax) {
+    errors.nombre = `El nombre no puede superar ${FIELD_LIMITS.character.nombreMax} caracteres.`;
   }
 
-  const email = values.email.trim();
   if (!email) {
     errors.email = 'Necesitamos tu correo para enviarte tu ficha secreta.';
-  } else if (!EMAIL_PATTERN.test(email)) {
+  } else if (email.length > FIELD_LIMITS.character.emailMax || !EMAIL_PATTERN.test(email)) {
     errors.email = 'Introduce un correo electrónico válido.';
   }
 
-  if (!values.perfil.trim()) {
+  if (!perfil) {
     errors.perfil = 'Elige el estilo de personaje que quieres interpretar.';
+  } else if (perfil.length > FIELD_LIMITS.character.perfilMax) {
+    errors.perfil = 'El perfil seleccionado no es válido.';
   }
 
-  if (values.mania.trim().length < 3) {
+  if (mania.length < FIELD_LIMITS.character.maniaMin) {
     errors.mania = 'Confiesa al menos una manía o vicio breve.';
+  } else if (mania.length > FIELD_LIMITS.character.maniaMax) {
+    errors.mania = `Máximo ${FIELD_LIMITS.character.maniaMax} caracteres.`;
   }
 
-  if (values.lema.trim().length < 2) {
+  if (lema.length < FIELD_LIMITS.character.lemaMin) {
     errors.lema = 'Añade una canción o frase himno para tu personaje.';
+  } else if (lema.length > FIELD_LIMITS.character.lemaMax) {
+    errors.lema = `Máximo ${FIELD_LIMITS.character.lemaMax} caracteres.`;
   }
 
   return errors;
@@ -91,13 +128,31 @@ export function validateCharacterForm(values: CharacterFormValues): ValidationEr
 
 export function validateRumorForm(values: RumorFormValues): ValidationErrors<RumorFormValues> {
   const errors: ValidationErrors<RumorFormValues> = {};
+  const objetivo = values.objetivo.trim();
+  const mania = values.mania.trim();
 
-  if (!values.objetivo.trim()) {
+  if (!objetivo) {
     errors.objetivo = 'Selecciona sobre qué invitado vas a escribir.';
+  } else if (objetivo.length > FIELD_LIMITS.rumor.objetivoMax) {
+    errors.objetivo = 'El invitado seleccionado no es válido.';
   }
 
-  if (values.mania.trim().length < 5) {
+  if (!values.anonymous && values.autor.trim().length > FIELD_LIMITS.rumor.autorMax) {
+    errors.autor = `Máximo ${FIELD_LIMITS.rumor.autorMax} caracteres.`;
+  }
+
+  if (mania.length < FIELD_LIMITS.rumor.maniaMin) {
     errors.mania = 'Cuéntanos una manía o anécdota con un poco más de detalle.';
+  } else if (mania.length > FIELD_LIMITS.rumor.maniaMax) {
+    errors.mania = `Máximo ${FIELD_LIMITS.rumor.maniaMax} caracteres.`;
+  }
+
+  if (values.soborno.trim().length > FIELD_LIMITS.rumor.sobornoMax) {
+    errors.soborno = `Máximo ${FIELD_LIMITS.rumor.sobornoMax} caracteres.`;
+  }
+
+  if (values.chisme.trim().length > FIELD_LIMITS.rumor.chismeMax) {
+    errors.chisme = `Máximo ${FIELD_LIMITS.rumor.chismeMax} caracteres.`;
   }
 
   return errors;

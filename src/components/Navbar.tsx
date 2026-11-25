@@ -3,7 +3,7 @@ import { Menu, X } from 'lucide-react';
 import { EVENT_CONFIG } from '../data/eventData';
 import { AmbientSoundControl } from './AmbientSoundControl';
 
-export type ActiveView = 'main' | 'rumors';
+export type ActiveView = 'main' | 'rumors' | 'organizer';
 
 interface NavbarProps {
   activeView: ActiveView;

@@ -1,10 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  FIELD_LIMITS,
   buildCharacterPayload,
   buildRumorPayload,
   computeCountdown,
   hasErrors,
+  isOrganizerEmail,
   padTwo,
   validateCharacterForm,
   validateRumorForm,
@@ -59,7 +61,7 @@ test('validateCharacterForm rejects incomplete or invalid email entries', () => 
   assert.ok(emptyErrors.lema);
 });
 
-test('validateCharacterForm accepts valid character data and builds expected Web3Forms payload', () => {
+test('validateCharacterForm accepts valid character data and builds expected payload', () => {
   const values = {
     nombre: 'Irene',
     email: 'irene@example.com',
@@ -113,4 +115,35 @@ test('validateRumorForm enforces required target and mania, and respects anonymo
   });
   assert.equal(namedPayload.Informante_Secreto, 'Irene');
   assert.equal(namedPayload.subject, '👁️ Rumor Lady Nebula sobre Bob (por Irene)');
+});
+
+test('validation rejects oversized payloads exceeding Firestore blueprint limits', () => {
+  const oversizedCharacter = validateCharacterForm({
+    nombre: 'Raúl',
+    email: 'raul@example.com',
+    perfil: 'Estratega / Manipulador',
+    mania: 'x'.repeat(FIELD_LIMITS.character.maniaMax + 1),
+    lema: 'y'.repeat(FIELD_LIMITS.character.lemaMax + 1),
+  });
+  assert.ok(oversizedCharacter.mania);
+  assert.ok(oversizedCharacter.lema);
+
+  const oversizedRumor = validateRumorForm({
+    objetivo: 'Mike',
+    autor: 'Raúl',
+    anonymous: false,
+    mania: 'm'.repeat(FIELD_LIMITS.rumor.maniaMax + 1),
+    soborno: 's'.repeat(FIELD_LIMITS.rumor.sobornoMax + 1),
+    chisme: 'c'.repeat(FIELD_LIMITS.rumor.chismeMax + 1),
+  });
+  assert.ok(oversizedRumor.mania);
+  assert.ok(oversizedRumor.soborno);
+  assert.ok(oversizedRumor.chisme);
+});
+
+test('isOrganizerEmail performs case-insensitive trimmed organizer verification', () => {
+  assert.equal(isOrganizerEmail('raulfdz3@gmail.com', 'raulfdz3@gmail.com'), true);
+  assert.equal(isOrganizerEmail('  RaulFdz3@gmail.com  ', 'raulfdz3@gmail.com'), true);
+  assert.equal(isOrganizerEmail('guest@gmail.com', 'raulfdz3@gmail.com'), false);
+  assert.equal(isOrganizerEmail(null, 'raulfdz3@gmail.com'), false);
 });

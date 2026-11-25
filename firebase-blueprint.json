@@ -1,0 +1,204 @@
+{
+  "entities": {
+    "CharacterSubmission": {
+      "title": "CharacterSubmission",
+      "description": "Private character registration submitted by a gala guest before organizer sync to Google Sheets.",
+      "type": "object",
+      "properties": {
+        "nombre": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Guest name chosen from the invitation roster."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 5,
+          "maxLength": 160,
+          "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+          "description": "Guest email address for their private character sheet."
+        },
+        "perfil": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80,
+          "description": "Selected gameplay archetype."
+        },
+        "mania": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 400,
+          "description": "Personal quirk or everyday crime."
+        },
+        "lema": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 300,
+          "description": "Character anthem or catchphrase."
+        },
+        "syncedToSheets": {
+          "type": "boolean",
+          "description": "Whether the organizer has synced this submission to their private Google Sheet."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of when the guest submitted the character."
+        },
+        "syncedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of when the organizer synced this entry to Google Sheets."
+        }
+      },
+      "required": [
+        "nombre",
+        "email",
+        "perfil",
+        "mania",
+        "lema",
+        "syncedToSheets",
+        "createdAt"
+      ]
+    },
+    "RumorSubmission": {
+      "title": "RumorSubmission",
+      "description": "Confidential Lady Nebula rumor submitted by a guest before organizer sync to Google Sheets.",
+      "type": "object",
+      "properties": {
+        "objetivo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Target guest name."
+        },
+        "autor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Informant name or 'Anónimo'."
+        },
+        "anonymous": {
+          "type": "boolean",
+          "description": "Whether the submission was sent anonymously."
+        },
+        "mania": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 800,
+          "description": "Quirk or anecdote about the target guest."
+        },
+        "soborno": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 400,
+          "description": "Optional weakness or bribe idea."
+        },
+        "chisme": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 800,
+          "description": "Optional rumor for Lady Nebula's chronicle."
+        },
+        "syncedToSheets": {
+          "type": "boolean",
+          "description": "Whether the organizer has synced this rumor to their private Google Sheet."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of when the rumor was submitted."
+        },
+        "syncedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of when the organizer synced this entry to Google Sheets."
+        }
+      },
+      "required": [
+        "objetivo",
+        "autor",
+        "anonymous",
+        "mania",
+        "soborno",
+        "chisme",
+        "syncedToSheets",
+        "createdAt"
+      ]
+    },
+    "OrganizerSheetConfig": {
+      "title": "OrganizerSheetConfig",
+      "description": "Private organizer configuration storing the linked Google Spreadsheet ID and title.",
+      "type": "object",
+      "properties": {
+        "spreadsheetId": {
+          "type": "string",
+          "minLength": 15,
+          "maxLength": 120,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Private Google Spreadsheet ID owned by the organizer."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Display title of the organizer's Google Spreadsheet."
+        },
+        "updatedBy": {
+          "type": "string",
+          "format": "email",
+          "minLength": 5,
+          "maxLength": 160,
+          "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+          "description": "Verified organizer email that last updated the config."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of the last update."
+        }
+      },
+      "required": ["spreadsheetId", "title", "updatedBy", "updatedAt"]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Authorized organizer record keyed by Firebase Auth UID.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 5,
+          "maxLength": 160,
+          "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+          "description": "Authorized organizer email address."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the admin record was created."
+        }
+      },
+      "required": ["email", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/characterSubmissions/{submissionId}": {
+      "schema": { "$ref": "#/entities/CharacterSubmission" },
+      "description": "Write-only dropbox for guest character forms; readable and manageable strictly by the organizer."
+    },
+    "/rumorSubmissions/{submissionId}": {
+      "schema": { "$ref": "#/entities/RumorSubmission" },
+      "description": "Write-only dropbox for confidential Lady Nebula rumors; readable and manageable strictly by the organizer."
+    },
+    "/organizerConfig/{configId}": {
+      "schema": { "$ref": "#/entities/OrganizerSheetConfig" },
+      "description": "Private organizer Google Sheets settings; strictly inaccessible to guests."
+    },
+    "/admins/{adminUid}": {
+      "schema": { "$ref": "#/entities/AdminRecord" },
+      "description": "Authorized organizer UIDs."
+    }
+  }
+}
