@@ -29,17 +29,17 @@ export const EVENT_CONFIG = {
 } as const;
 
 export const GUESTS = [
-  'Sergio Romera',
-  'Miriam Gómez',
-  'Marc Vallès (Viri)',
-  'Sara García',
-  'Mike',
   'Bob',
-  'JM (Javi Morillas)',
+  'Coach',
   'Irene',
-  'Adri',
-  'Sara (pareja de Adri)',
-  'Raúl',
+  'JM',
+  'Lito',
+  'Mike',
+  'Míriam',
+  'Romera',
+  'Sara',
+  'Sara G',
+  'Viri',
 ] as const;
 
 export const RUMOR_TARGETS = [
