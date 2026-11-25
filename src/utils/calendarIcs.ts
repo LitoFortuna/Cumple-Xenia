@@ -1,3 +1,5 @@
+import { EVENT_CONFIG } from '../data/eventData';
+
 function escapeIcsText(value: string): string {
   return value
     .replace(/\\/g, '\\\\')
@@ -34,7 +36,7 @@ export function buildGalaCalendarIcs(now: Date = new Date()): string {
     `DTSTART:${formatUtcStamp(startUtc)}`,
     `DTEND:${formatUtcStamp(endUtc)}`,
     `SUMMARY:${escapeIcsText('Cumpleaños de Xenia · Gala Estelar Órbita-X')}`,
-    `LOCATION:${escapeIcsText('Nuestra casa, Molins de Rei')}`,
+    `LOCATION:${escapeIcsText(EVENT_CONFIG.venueAddress)}`,
     `DESCRIPTION:${escapeIcsText('Gala Estelar del Ritmo 3027. Dress code: Gala Galáctica Urbana (base elegante + toque urbano/espacial). Duración estimada: 90-120 min.')}`,
     'END:VEVENT',
     'END:VCALENDAR',

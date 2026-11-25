@@ -20,7 +20,7 @@ export function Footer({
             Operación {EVENT_CONFIG.brandName} · Cumpleaños de Xenia
           </p>
           <p>
-            Domingo 3 de enero, 17:00h <span aria-hidden="true">·</span> Molins de Rei
+            Domingo 3 de enero, 17:00h <span aria-hidden="true">·</span> {EVENT_CONFIG.venueAddress}
           </p>
         </div>
 

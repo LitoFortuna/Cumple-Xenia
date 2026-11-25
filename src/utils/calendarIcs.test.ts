@@ -13,6 +13,10 @@ test('buildGalaCalendarIcs produces valid RFC 5545 VCALENDAR with exact UTC time
   assert.ok(ics.includes('DTSTART:20270103T160000Z\r\n'));
   assert.ok(ics.includes('DTEND:20270103T180000Z\r\n'));
   assert.ok(ics.includes('SUMMARY:Cumpleaños de Xenia · Gala Estelar Órbita-X\r\n'));
-  assert.ok(ics.includes('LOCATION:Nuestra casa\\, Molins de Rei\r\n'));
+  assert.ok(
+    ics.includes(
+      "LOCATION:Torrent d'en Benet 1\\, 3-2\\, Molins de Llobregat (El Baix Antifa)\r\n"
+    )
+  );
   assert.ok(ics.endsWith('END:VCALENDAR\r\n'));
 });

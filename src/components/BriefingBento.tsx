@@ -99,15 +99,15 @@ export function BriefingBento({
             className="pointer-events-none absolute -bottom-20 -right-14 h-52 w-52 rounded-full bg-[#6d28d9]/25 blur-[70px]"
           />
           <p className="relative z-10 text-xs font-medium tracking-wide text-[#c4b5fd]">
-            Protocolo confidencial
+            Protocolo confidencial, más o menos
           </p>
           <div className="relative z-10 mt-6 space-y-2.5">
             <h3 className="font-display text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-[-0.025em] text-[#f9fafb]">
-              Silencio total.
+              Permitido divertirse
             </h3>
             <p className="text-sm sm:text-base leading-relaxed text-[#9ca3af]">
-              Xenia no conoce el guion, las pruebas ni los roles asignados. Mantén tu ficha bajo
-              llave hasta la noche de la gala.
+              Xenia no conoce el guion, las pruebas ni los roles asignados, pero se permite hablar en
+              clave, las bromas internas y dobles sentidos en su presencia.
             </p>
           </div>
         </article>

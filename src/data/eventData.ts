@@ -24,7 +24,7 @@ export const EVENT_CONFIG = {
   timeLabel: '17:00h',
   durationLabel: 'Duración estimada del Cluedo en Vivo: 90 – 120 minutos.',
   venueName: 'Crucero Nebulosa Real',
-  venueAddress: 'Nuestra casa · Molins de Rei',
+  venueAddress: "Torrent d'en Benet 1, 3-2, Molins de Llobregat (El Baix Antifa)",
   coordinates: '41.4139° N · 2.0163° E',
 } as const;
 
@@ -152,7 +152,7 @@ export const GALA_FAQ_ITEMS: GalaFaqItem[] = [
     id: 'silencio',
     question: '¿Qué puede saber Xenia antes del día de la fiesta?',
     answer:
-      'Lo mínimo imprescindible: sabe que celebramos su cumpleaños, pero desconoce por completo la historia de Órbita-X, los roles, las pruebas y el Buzón de Lady Nebula. Silencio absoluto en grupos donde esté ella.',
+      'No conoce el guion, las pruebas, los roles asignados ni el Buzón de Lady Nebula, así que nada de destripar la trama ni enseñar tu ficha. Eso sí: está totalmente permitido hablar en clave, soltar bromas internas y jugar con dobles sentidos en su presencia.',
   },
 ];
 

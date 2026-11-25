@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <defs>
+    <radialGradient id="bgGlow" cx="35%" cy="28%" r="75%">
+      <stop offset="0%" stop-color="#191f3d" />
+      <stop offset="55%" stop-color="#0b0d17" />
+      <stop offset="100%" stop-color="#06070b" />
+    </radialGradient>
+    <linearGradient id="orbitBack" x1="8" y1="42" x2="56" y2="22" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6d28d9" stop-opacity="0.35" />
+      <stop offset="50%" stop-color="#3b82f6" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#a78bfa" stop-opacity="0.35" />
+    </linearGradient>
+    <linearGradient id="orbitFront" x1="10" y1="44" x2="54" y2="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7c3aed" />
+      <stop offset="52%" stop-color="#60a5fa" />
+      <stop offset="100%" stop-color="#f9fafb" />
+    </linearGradient>
+    <linearGradient id="xPrimary" x1="20" y1="18" x2="44" y2="46" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#dbeafe" />
+    </linearGradient>
+    <linearGradient id="xAccent" x1="44" y1="18" x2="20" y2="46" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#c4b5fd" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+  </defs>
+
+  <!-- Obsidian rounded emblem base -->
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#bgGlow)" stroke="#ffffff" stroke-opacity="0.14" stroke-width="1.5" />
+
+  <!-- Subtle back half of the tilted orbital ring -->
+  <g transform="rotate(-26 32 32)">
+    <path
+      d="M 8 32 A 24 9.5 0 0 1 56 32"
+      stroke="url(#orbitBack)"
+      stroke-width="2.5"
+      stroke-linecap="round"
+    />
+  </g>
+
+  <!-- Bold geometric X monogram -->
+  <path
+    d="M 43 19.5 L 21 44.5"
+    stroke="url(#xAccent)"
+    stroke-width="6.5"
+    stroke-linecap="round"
+  />
+  <path
+    d="M 21 19.5 L 43 44.5"
+    stroke="url(#xPrimary)"
+    stroke-width="6.5"
+    stroke-linecap="round"
+  />
+
+  <!-- Luminous front orbital arc wrapping across the X -->
+  <g transform="rotate(-26 32 32)">
+    <path
+      d="M 8 32 A 24 9.5 0 0 0 56 32"
+      stroke="url(#orbitFront)"
+      stroke-width="3"
+      stroke-linecap="round"
+    />
+    <!-- Bright starlight satellite node -->
+    <circle cx="53" cy="29.2" r="5" fill="#60a5fa" fill-opacity="0.32" />
+    <circle cx="53" cy="29.2" r="2.4" fill="#ffffff" />
+  </g>
+</svg>
