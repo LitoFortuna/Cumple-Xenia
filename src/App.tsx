@@ -6,7 +6,9 @@ import { BriefingBento } from './components/BriefingBento';
 import { DressCodeSection } from './components/DressCodeSection';
 import { CharacterFormSection } from './components/CharacterFormSection';
 import { RumorMailboxView } from './components/RumorMailboxView';
+import { SheetsConfirmModal } from './components/SheetsConfirmModal';
 import { Footer } from './components/Footer';
+import { useGoogleSheets } from './hooks/useGoogleSheets';
 
 const MAIN_SECTIONS = ['top', 'cronica', 'detalles', 'dresscode', 'personaje'] as const;
 
@@ -14,6 +16,7 @@ export default function App() {
   const [activeView, setActiveView] = useState<ActiveView>('main');
   const [activeSection, setActiveSection] = useState<string>('top');
   const [registeredGuestName, setRegisteredGuestName] = useState<string>('');
+  const sheets = useGoogleSheets();
 
   const scrollToSection = useCallback((sectionId: string) => {
     if (sectionId === 'top') {
@@ -88,6 +91,7 @@ export default function App() {
             <BriefingBento onOpenRumors={() => handleNavigateRumors()} />
             <DressCodeSection />
             <CharacterFormSection
+              sheets={sheets}
               onRegistered={(name) => setRegisteredGuestName(name)}
               onOpenRumors={(author) => handleNavigateRumors(author)}
             />
@@ -95,6 +99,7 @@ export default function App() {
         ) : (
           <div key="view-rumors" className="animate-fade-up">
             <RumorMailboxView
+              sheets={sheets}
               initialAuthor={registeredGuestName}
               onBackToInvitation={() => handleNavigateMain('top')}
             />
@@ -105,6 +110,13 @@ export default function App() {
       <Footer
         onNavigateMain={handleNavigateMain}
         onNavigateRumors={() => handleNavigateRumors()}
+      />
+
+      <SheetsConfirmModal
+        request={sheets.pendingConfirmation}
+        isBusy={sheets.isBusy}
+        onConfirm={() => void sheets.confirmPendingAction()}
+        onCancel={sheets.cancelPendingAction}
       />
     </div>
   );

@@ -1,16 +1,18 @@
 import { useState, type FormEvent } from 'react';
-import { AlertCircle, ArrowRight, Check, Loader2 } from 'lucide-react';
+import { AlertCircle, ArrowRight, Check, ExternalLink } from 'lucide-react';
 import { ARCHETYPES, GUESTS } from '../data/eventData';
+import type { GoogleSheetsController } from '../hooks/useGoogleSheets';
 import {
-  buildCharacterPayload,
   hasErrors,
   validateCharacterForm,
   type CharacterFormValues,
   type ValidationErrors,
 } from '../utils/orbitaLogic';
-import { submitToWeb3Forms } from '../utils/web3forms';
+import { buildSpreadsheetUrl } from '../utils/sheetsLogic';
+import { SheetsConnectionPanel } from './SheetsConnectionPanel';
 
 interface CharacterFormSectionProps {
+  sheets: GoogleSheetsController;
   onRegistered: (guestName: string) => void;
   onOpenRumors: (prefillAuthor?: string) => void;
 }
@@ -24,13 +26,12 @@ const INITIAL_VALUES: CharacterFormValues = {
 };
 
 export function CharacterFormSection({
+  sheets,
   onRegistered,
   onOpenRumors,
 }: CharacterFormSectionProps) {
   const [values, setValues] = useState<CharacterFormValues>(INITIAL_VALUES);
   const [fieldErrors, setFieldErrors] = useState<ValidationErrors<CharacterFormValues>>({});
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedGuest, setSubmittedGuest] = useState<{
     nombre: string;
     perfil: string;
@@ -48,14 +49,13 @@ export function CharacterFormSection({
         return copy;
       });
     }
-    if (submitError) {
-      setSubmitError(null);
+    if (sheets.error) {
+      sheets.clearError();
     }
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setSubmitError(null);
 
     const validation = validateCharacterForm(values);
     if (hasErrors(validation)) {
@@ -63,22 +63,22 @@ export function CharacterFormSection({
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      const payload = buildCharacterPayload(values);
-      await submitToWeb3Forms(payload);
+    const guestName = values.nombre.trim();
+    const guestArchetype = values.perfil.trim();
+
+    sheets.requestSaveCharacter(values, () => {
       setSubmittedGuest({
-        nombre: values.nombre.trim(),
-        perfil: values.perfil.trim(),
+        nombre: guestName,
+        perfil: guestArchetype,
       });
-      onRegistered(values.nombre.trim());
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'No se pudo completar el registro.';
-      setSubmitError(message);
-    } finally {
-      setIsSubmitting(false);
-    }
+      onRegistered(guestName);
+    });
+  };
+
+  const handleRegisterAnother = () => {
+    setSubmittedGuest(null);
+    setValues(INITIAL_VALUES);
+    setFieldErrors({});
   };
 
   const inputBaseClass =
@@ -103,7 +103,7 @@ export function CharacterFormSection({
         <div className="relative z-10">
           {!submittedGuest ? (
             <>
-              <div className="mx-auto mb-8 sm:mb-10 max-w-xl text-center space-y-2.5">
+              <div className="mx-auto mb-8 max-w-xl text-center space-y-2.5">
                 <p className="text-sm font-medium text-[#60a5fa]">
                   04. Paso 1 · Registro de pasajero
                 </p>
@@ -111,10 +111,12 @@ export function CharacterFormSection({
                   Crea tu personaje.
                 </h2>
                 <p className="text-sm sm:text-base leading-relaxed text-[#9ca3af]">
-                  Cada rol se escribe 100% a medida. Te enviaremos tu ficha secreta por correo unos
-                  días antes de la gala.
+                  Cada rol se escribe 100% a medida. Tus respuestas se guardarán directamente en
+                  Google Sheets sin enviar correos automáticos.
                 </p>
               </div>
+
+              <SheetsConnectionPanel sheets={sheets} accent="cobalt" />
 
               <form onSubmit={handleSubmit} noValidate className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -164,7 +166,7 @@ export function CharacterFormSection({
                       autoComplete="email"
                       value={values.email}
                       onChange={(e) => updateField('email', e.target.value)}
-                      placeholder="para enviarte tu ficha secreta"
+                      placeholder="para anotarlo en tu ficha de personaje"
                       aria-invalid={Boolean(fieldErrors.email)}
                       aria-describedby={fieldErrors.email ? 'rsvp-email-error' : undefined}
                       className={`${inputBaseClass} ${inputStateClass(Boolean(fieldErrors.email))}`}
@@ -285,30 +287,23 @@ export function CharacterFormSection({
                   )}
                 </div>
 
-                {submitError && (
+                {sheets.error && (
                   <div
                     role="alert"
-                    className="flex items-start gap-2.5 rounded-2xl border border-rose-500/35 bg-rose-950/40 p-4 text-sm text-rose-200"
+                    className="flex items-start gap-2.5 rounded-2xl border border-rose-500/35 bg-rose-950/40 p-4 text-xs sm:text-sm text-rose-200"
                   >
                     <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-400" aria-hidden="true" />
-                    <span>{submitError}</span>
+                    <span>{sheets.error}</span>
                   </div>
                 )}
 
                 <div className="pt-2">
                   <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={sheets.isBusy}
                     className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full bg-[#2563eb] px-6 py-3.5 text-sm sm:text-base font-medium text-white transition-all duration-150 hover:bg-[#1d4ed8] hover:shadow-[0_12px_32px_rgba(37,99,235,0.34)] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#60a5fa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e1017]"
                   >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                        <span>Transmitiendo registro…</span>
-                      </>
-                    ) : (
-                      <span>Enviar datos y solicitar ficha</span>
-                    )}
+                    <span>Guardar personaje en Google Sheets</span>
                   </button>
                 </div>
               </form>
@@ -321,23 +316,44 @@ export function CharacterFormSection({
 
               <div className="space-y-2">
                 <p className="text-xs font-medium tracking-wide text-[#60a5fa]">
-                  Embarque registrado · {submittedGuest.perfil}
+                  Guardado en Google Sheets · {submittedGuest.perfil}
                 </p>
                 <h3 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-[#f9fafb]">
                   Recibido, <span className="text-gradient-cobalt">{submittedGuest.nombre}</span>.
                 </h3>
                 <p className="text-sm sm:text-base leading-relaxed text-[#9ca3af]">
-                  Tus coordenadas están en manos del Alto Mando. Recibirás tu{' '}
-                  <span className="text-[#f3f4f6]">Ficha Secreta</span> por correo unos días antes
-                  del 3 de enero.
+                  Tus datos se han registrado en la pestaña{' '}
+                  <span className="text-[#f3f4f6]">Personajes</span> de Google Sheets sin enviar
+                  ningún correo automático.
                 </p>
               </div>
+
+              {sheets.spreadsheet && (
+                <div className="flex flex-wrap items-center justify-center gap-4 text-xs sm:text-sm">
+                  <a
+                    href={buildSpreadsheetUrl(sheets.spreadsheet.spreadsheetId)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 font-medium text-[#93c5fd] transition-colors hover:text-white"
+                  >
+                    <span>Ver hoja en Google Sheets</span>
+                    <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                  </a>
+                  <button
+                    type="button"
+                    onClick={handleRegisterAnother}
+                    className="font-medium text-[#9ca3af] transition-colors hover:text-white cursor-pointer"
+                  >
+                    Registrar otro personaje
+                  </button>
+                </div>
+              )}
 
               <div className="border-t border-white/[0.08] pt-6 space-y-4">
                 <p className="text-xs font-medium text-[#c4b5fd]">Siguiente fase</p>
                 <p className="text-sm text-[#d1d5db] leading-relaxed">
                   Ayuda a <strong className="text-white">Lady Nebula</strong> a perfeccionar los
-                  roles del resto del grupo enviando rumores confidenciales.
+                  roles del resto del grupo guardando rumores confidenciales.
                 </p>
                 <button
                   type="button"

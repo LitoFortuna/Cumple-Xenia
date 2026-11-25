@@ -26,7 +26,6 @@ export const EVENT_CONFIG = {
   venueName: 'Crucero Nebulosa Real',
   venueAddress: 'Nuestra casa · Molins de Rei',
   coordinates: '41.4139° N · 2.0163° E',
-  web3FormsKey: '30ff5d7e-c034-41c5-9fe6-2d233bf95a21',
 } as const;
 
 export const GUESTS = [
